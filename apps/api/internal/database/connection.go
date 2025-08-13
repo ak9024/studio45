@@ -1,6 +1,7 @@
 package database
 
 import (
+	"api/internal/helpers"
 	"fmt"
 	"log"
 	"os"
@@ -24,12 +25,12 @@ type Config struct {
 
 func LoadConfig() Config {
 	return Config{
-		Host:     getEnv("DB_HOST", "localhost"),
-		Port:     getEnv("DB_PORT", "5432"),
-		User:     getEnv("DB_USER", "postgres"),
-		Password: getEnv("DB_PASSWORD", "postgres"),
-		DBName:   getEnv("DB_NAME", "studio45"),
-		SSLMode:  getEnv("DB_SSLMODE", "disable"),
+		Host:     helpers.GetEnv("DB_HOST", "localhost"),
+		Port:     helpers.GetEnv("DB_PORT", "5432"),
+		User:     helpers.GetEnv("DB_USER", "postgres"),
+		Password: helpers.GetEnv("DB_PASSWORD", "postgres"),
+		DBName:   helpers.GetEnv("DB_NAME", "studio45"),
+		SSLMode:  helpers.GetEnv("DB_SSLMODE", "disable"),
 	}
 }
 
@@ -84,13 +85,6 @@ func Close() error {
 		return sqlDB.Close()
 	}
 	return nil
-}
-
-func getEnv(key, defaultValue string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-	return defaultValue
 }
 
 func getLogLevel() logger.LogLevel {

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 
 	"api/internal/database"
+	"api/internal/helpers"
 	"api/internal/server"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
@@ -73,17 +73,8 @@ func init() {
 	}
 
 	// Get environment variables with defaults
-	envPort := defaultPort
-	if p := os.Getenv("PORT"); p != "" {
-		if parsedPort, err := strconv.Atoi(p); err == nil {
-			envPort = parsedPort
-		}
-	}
-
-	envVersion := os.Getenv("SERVICE_VERSION")
-	if envVersion == "" {
-		envVersion = defaultVersion
-	}
+	envPort := helpers.GetEnvInt("PORT", defaultPort)
+	envVersion := helpers.GetEnv("SERVICE_VERSION", defaultVersion)
 
 	// Add commands
 	rootCmd.AddCommand(serverCmd)
