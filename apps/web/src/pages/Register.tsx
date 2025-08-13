@@ -1,13 +1,13 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Layout } from '../components/Layout/Layout';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import { useAuth } from '../hooks/useAuth';
 
 interface RegisterForm {
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
   password: string;
   confirmPassword: string;
@@ -73,16 +73,33 @@ const PasswordStrengthIndicator = ({ password }: { password: string }) => {
 };
 
 export const Register = () => {
-  const [isLoading, setIsLoading] = useState(false);
+  const { register: registerUser, isLoading, error, clearError, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const { register, handleSubmit, formState: { errors }, watch } = useForm<RegisterForm>();
   
   const watchPassword = watch('password', '');
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
+
   const onSubmit = async (data: RegisterForm) => {
-    setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    console.log('Register data:', data);
-    setIsLoading(false);
+    try {
+      await registerUser({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+      });
+      navigate('/dashboard');
+    } catch {
+      // Error is handled by AuthContext
+    }
   };
 
   return (
@@ -113,40 +130,29 @@ export const Register = () => {
           </div>
           
           <div className="bg-white dark:bg-gray-800 py-8 px-6 shadow-xl rounded-2xl border border-gray-200 dark:border-gray-700">
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/50 border border-red-200 dark:border-red-800 rounded-lg">
+                <div className="text-sm text-red-600 dark:text-red-400">
+                  {error}
+                </div>
+              </div>
+            )}
             <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Input
-                    label="First name"
-                    type="text"
-                    autoComplete="given-name"
-                    placeholder="John"
-                    error={errors.firstName?.message}
-                    {...register('firstName', {
-                      required: 'First name is required',
-                      minLength: {
-                        value: 2,
-                        message: 'First name must be at least 2 characters'
-                      }
-                    })}
-                  />
-                </div>
-                <div>
-                  <Input
-                    label="Last name"
-                    type="text"
-                    autoComplete="family-name"
-                    placeholder="Doe"
-                    error={errors.lastName?.message}
-                    {...register('lastName', {
-                      required: 'Last name is required',
-                      minLength: {
-                        value: 2,
-                        message: 'Last name must be at least 2 characters'
-                      }
-                    })}
-                  />
-                </div>
+              <div>
+                <Input
+                  label="Full name"
+                  type="text"
+                  autoComplete="name"
+                  placeholder="John Doe"
+                  error={errors.name?.message}
+                  {...register('name', {
+                    required: 'Name is required',
+                    minLength: {
+                      value: 2,
+                      message: 'Name must be at least 2 characters'
+                    }
+                  })}
+                />
               </div>
               
               <div>

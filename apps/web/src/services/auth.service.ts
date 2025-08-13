@@ -3,6 +3,12 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface RegisterRequest {
+  name: string;
+  email: string;
+  password: string;
+}
+
 export interface LoginResponse {
   token: string;
   user: {
@@ -22,7 +28,7 @@ export class ApiError extends Error {
   }
 }
 
-const API_BASE_URL = 'http://localhost:8080/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_HOST || 'http://localhost:8080/api/v1';
 
 class AuthService {
   async login(credentials: LoginRequest): Promise<LoginResponse> {
@@ -39,6 +45,42 @@ class AuthService {
         const errorData = await response.json().catch(() => ({}));
         throw new ApiError(
           errorData.message || 'Login failed',
+          response.status
+        );
+      }
+
+      const data: LoginResponse = await response.json();
+      return data;
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      
+      throw new ApiError(
+        'Network error. Please check your connection.',
+        0
+      );
+    }
+  }
+
+  async register(userData: RegisterRequest): Promise<LoginResponse> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: userData.name,
+          email: userData.email,
+          password: userData.password,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new ApiError(
+          errorData.message || 'Registration failed',
           response.status
         );
       }

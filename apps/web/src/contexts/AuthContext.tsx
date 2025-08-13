@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { authService, ApiError } from '../services/auth.service';
-import type { LoginRequest, LoginResponse } from '../services/auth.service';
+import type { LoginRequest, RegisterRequest, LoginResponse } from '../services/auth.service';
 import { AuthContext } from './auth-context';
 import type { AuthContextType } from './auth-context';
 
@@ -57,6 +57,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  const register = async (userData: RegisterRequest) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const response = await authService.register(userData);
+      
+      authService.storeToken(response.token);
+      authService.storeUser(response.user);
+      
+      setToken(response.token);
+      setUser(response.user);
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err.message);
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const logout = () => {
     authService.removeToken();
     setToken(null);
@@ -74,6 +98,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isLoading,
     isAuthenticated: !!token && !!user,
     login,
+    register,
     logout,
     error,
     clearError,

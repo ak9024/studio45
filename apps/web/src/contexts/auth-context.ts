@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import type { LoginRequest, LoginResponse } from '../services/auth.service';
+import type { LoginRequest, RegisterRequest, LoginResponse } from '../services/auth.service';
 
 export interface AuthContextType {
   user: LoginResponse['user'] | null;
@@ -7,6 +7,7 @@ export interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (credentials: LoginRequest) => Promise<void>;
+  register: (userData: RegisterRequest) => Promise<void>;
   logout: () => void;
   error: string | null;
   clearError: () => void;
