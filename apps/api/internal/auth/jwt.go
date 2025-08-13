@@ -17,7 +17,7 @@ type Claims struct {
 
 func GenerateToken(userID string, email string) (string, error) {
 	secret := os.Getenv("JWT_SECRET")
-	if secret == "" || secret == "your-secret-key-change-this-in-production" {
+	if secret == "" || secret == "secret" {
 		return "", errors.New("JWT_SECRET environment variable is not properly configured")
 	}
 
@@ -52,7 +52,7 @@ func GenerateToken(userID string, email string) (string, error) {
 
 func ValidateToken(tokenString string) (*Claims, error) {
 	secret := os.Getenv("JWT_SECRET")
-	if secret == "" || secret == "your-secret-key-change-this-in-production" {
+	if secret == "" || secret == "secret" {
 		return nil, errors.New("JWT_SECRET environment variable is not properly configured")
 	}
 
@@ -73,3 +73,4 @@ func ValidateToken(tokenString string) (*Claims, error) {
 
 	return nil, fmt.Errorf("invalid token")
 }
+
