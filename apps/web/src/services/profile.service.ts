@@ -13,6 +13,7 @@ export interface ProfileUpdateRequest {
   name?: string;
   phone?: string | null;
   company?: string | null;
+  roles?: string[];
 }
 
 import { ApiError } from './auth.service';
