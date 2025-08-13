@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"api/internal/handlers"
+	"api/internal/middleware"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -13,9 +14,7 @@ import (
 )
 
 type Config struct {
-	Port    int
-	Service string
-	Version string
+	Port int
 }
 
 type Server struct {
@@ -25,7 +24,6 @@ type Server struct {
 
 func New(config Config) *Server {
 	app := fiber.New(fiber.Config{
-		AppName:      config.Service,
 		ErrorHandler: errorHandler,
 	})
 
@@ -58,14 +56,22 @@ func setupMiddleware(app *fiber.App) {
 }
 
 func setupRoutes(app *fiber.App, config Config) {
-	healthHandler := handlers.HealthCheck(config.Service, config.Version)
+	healthHandler := handlers.HealthCheck()
 
 	app.Get("/health", healthHandler)
 
 	api := app.Group("/api")
 	v1 := api.Group("/v1")
 
-	v1.Get("/health", healthHandler)
+	// Auth routes
+	auth := v1.Group("/auth")
+	auth.Post("/register", handlers.Register)
+	auth.Post("/login", handlers.Login)
+
+	// Protected routes
+	protected := v1.Group("/protected")
+	protected.Use(middleware.RequireAuth())
+	protected.Get("/profile", handlers.GetProfile)
 }
 
 func errorHandler(c *fiber.Ctx, err error) error {
@@ -81,4 +87,3 @@ func errorHandler(c *fiber.Ctx, err error) error {
 		"error": message,
 	})
 }
-

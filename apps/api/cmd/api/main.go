@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 
+	"api/internal/database"
 	"api/internal/server"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
@@ -19,23 +20,35 @@ const (
 
 var (
 	port    int
-	service string
 	version string
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "studio45",
-	Short: "Studio45 API Server",
+	Use:           "api",
+	Short:         "Studio45 API Server",
+	SilenceErrors: true,
+	SilenceUsage:  true,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		cmd.Help()
+		return nil
+	},
 }
 
 var serverCmd = &cobra.Command{
-	Use:   "server",
+	Use:   "serve",
 	Short: "Start the API server",
 	Run: func(cmd *cobra.Command, args []string) {
+		// Initialize database connection
+		log.Println("Connecting to database...")
+		dbConfig := database.LoadConfig()
+		if err := database.Connect(dbConfig); err != nil {
+			log.Fatalf("Failed to connect to database: %v", err)
+		}
+		defer database.Close()
+
+		// Start server
 		config := server.Config{
-			Port:    port,
-			Service: service,
-			Version: version,
+			Port: port,
 		}
 
 		srv := server.New(config)
@@ -49,7 +62,7 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the version",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("%s version %s\n", service, version)
+		fmt.Printf("%s version %s\n", defaultService, version)
 	},
 }
 
@@ -62,14 +75,9 @@ func init() {
 	// Get environment variables with defaults
 	envPort := defaultPort
 	if p := os.Getenv("PORT"); p != "" {
-		if port, err := strconv.Atoi(p); err == nil {
-			envPort = port
+		if parsedPort, err := strconv.Atoi(p); err == nil {
+			envPort = parsedPort
 		}
-	}
-
-	envService := os.Getenv("SERVICE_NAME")
-	if envService == "" {
-		envService = defaultService
 	}
 
 	envVersion := os.Getenv("SERVICE_VERSION")
@@ -77,16 +85,24 @@ func init() {
 		envVersion = defaultVersion
 	}
 
+	// Add commands
 	rootCmd.AddCommand(serverCmd)
 	rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(migrateCmd)
 
+	// Add flags
 	serverCmd.Flags().IntVarP(&port, "port", "p", envPort, "Port to run the server on")
-	serverCmd.Flags().StringVarP(&service, "service", "s", envService, "Service name")
-	serverCmd.Flags().StringVarP(&version, "version", "v", envVersion, "Service version")
+	versionCmd.Flags().StringVarP(&version, "version", "v", envVersion, "Service version")
+
+	// Set version for use in version command
+	version = envVersion
 }
 
-func main() {
+func Execute() {
 	if err := rootCmd.Execute(); err != nil {
+		// Show help for unknown commands
+		fmt.Fprintf(os.Stderr, "Error: unknown command\n\n")
+		rootCmd.Help()
 		os.Exit(1)
 	}
 }
