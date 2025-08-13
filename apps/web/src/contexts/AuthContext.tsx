@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { authService, ApiError } from '../services/auth.service';
 import type { LoginRequest, RegisterRequest, LoginResponse } from '../services/auth.service';
+import { profileService } from '../services/profile.service';
+import type { ProfileUpdateRequest } from '../services/profile.service';
 import { AuthContext } from './auth-context';
 import type { AuthContextType } from './auth-context';
 
@@ -40,11 +42,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       const response = await authService.login(credentials);
       
+      // Fetch full profile after successful login
+      const profile = await profileService.getProfile(response.token);
+      
+      // Store token and full profile data
       authService.storeToken(response.token);
-      authService.storeUser(response.user);
+      authService.storeUser(profile);
       
       setToken(response.token);
-      setUser(response.user);
+      setUser(profile);
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.message);
@@ -64,11 +70,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       const response = await authService.register(userData);
       
+      // Fetch full profile after successful registration
+      const profile = await profileService.getProfile(response.token);
+      
+      // Store token and full profile data
       authService.storeToken(response.token);
-      authService.storeUser(response.user);
+      authService.storeUser(profile);
       
       setToken(response.token);
-      setUser(response.user);
+      setUser(profile);
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.message);
@@ -88,6 +98,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setError(null);
   };
 
+  const updateProfile = async (profileData: ProfileUpdateRequest) => {
+    if (!token) {
+      throw new Error('No authentication token available');
+    }
+
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const updatedProfile = await profileService.updateProfile(token, profileData);
+      
+      // Update stored user data and state
+      authService.storeUser(updatedProfile);
+      setUser(updatedProfile);
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err.message);
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const clearError = () => {
     setError(null);
   };
@@ -99,6 +135,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isAuthenticated: !!token && !!user,
     login,
     register,
+    updateProfile,
     logout,
     error,
     clearError,

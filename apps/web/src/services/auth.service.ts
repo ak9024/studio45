@@ -15,6 +15,11 @@ export interface LoginResponse {
     id: string;
     email: string;
     name: string;
+    phone: string | null;
+    company: string | null;
+    roles: string[];
+    created_at: string;
+    updated_at: string;
   };
 }
 
