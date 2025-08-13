@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Layout } from '../components/Layout/Layout';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import { useAuth } from '../hooks/useAuth';
 
 interface LoginForm {
   email: string;
@@ -12,14 +13,30 @@ interface LoginForm {
 }
 
 export const Login = () => {
-  const [isLoading, setIsLoading] = useState(false);
+  const { login, isLoading, error, clearError, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>();
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
+
   const onSubmit = async (data: LoginForm) => {
-    setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    console.log('Login data:', data);
-    setIsLoading(false);
+    try {
+      await login({
+        email: data.email,
+        password: data.password,
+      });
+      navigate('/dashboard');
+    } catch {
+      // Error is handled by AuthContext
+    }
   };
 
   return (
@@ -50,6 +67,13 @@ export const Login = () => {
           </div>
           
           <div className="bg-white dark:bg-gray-800 py-8 px-6 shadow-xl rounded-2xl border border-gray-200 dark:border-gray-700">
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/50 border border-red-200 dark:border-red-800 rounded-lg">
+                <div className="text-sm text-red-600 dark:text-red-400">
+                  {error}
+                </div>
+              </div>
+            )}
             <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
               <div>
                 <Input
