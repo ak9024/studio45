@@ -10,12 +10,12 @@ import (
 )
 
 type Claims struct {
-	UserID uint   `json:"user_id"`
+	UserID string `json:"user_id"`
 	Email  string `json:"email"`
 	jwt.RegisteredClaims
 }
 
-func GenerateToken(userID uint, email string) (string, error) {
+func GenerateToken(userID string, email string) (string, error) {
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" || secret == "your-secret-key-change-this-in-production" {
 		return "", errors.New("JWT_SECRET environment variable is not properly configured")

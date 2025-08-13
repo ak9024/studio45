@@ -38,11 +38,11 @@ func RequireAuth() fiber.Handler {
 	}
 }
 
-func GetUserID(c *fiber.Ctx) uint {
-	if userID, ok := c.Locals("userID").(uint); ok {
+func GetUserID(c *fiber.Ctx) string {
+	if userID, ok := c.Locals("userID").(string); ok {
 		return userID
 	}
-	return 0
+	return ""
 }
 
 func GetUserEmail(c *fiber.Ctx) string {

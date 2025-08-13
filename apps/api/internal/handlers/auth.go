@@ -145,14 +145,14 @@ func isDuplicateError(err error) bool {
 
 func GetProfile(c *fiber.Ctx) error {
 	userID := middleware.GetUserID(c)
-	if userID == 0 {
+	if userID == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": "User not authenticated",
 		})
 	}
 
 	var user models.User
-	result := database.DB.First(&user, userID)
+	result := database.DB.Where("id = ?", userID).First(&user)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
