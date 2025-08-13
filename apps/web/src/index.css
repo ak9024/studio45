@@ -69,3 +69,114 @@
     @apply text-gray-300 hover:bg-gray-800;
   }
 }
+
+/* Success page animations */
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes scale-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) rotate(-180deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.1) rotate(10deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.6s ease-out;
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.8s ease-out;
+  animation-delay: 0.3s;
+  animation-fill-mode: both;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out;
+  animation-fill-mode: both;
+}
+
+.confetti-piece {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  animation: confetti-fall 3s linear infinite;
+}
+
+.confetti-piece:nth-child(odd) {
+  background: linear-gradient(45deg, #10b981, #34d399);
+  border-radius: 50%;
+}
+
+.confetti-piece:nth-child(even) {
+  background: linear-gradient(45deg, #3b82f6, #60a5fa);
+  border-radius: 2px;
+}
+
+.confetti-piece:nth-child(3n) {
+  background: linear-gradient(45deg, #f59e0b, #fbbf24);
+  border-radius: 50%;
+}
+
+.confetti-piece:nth-child(4n) {
+  background: linear-gradient(45deg, #ef4444, #f87171);
+  border-radius: 2px;
+}
+
+.confetti-piece:nth-child(5n) {
+  background: linear-gradient(45deg, #8b5cf6, #a78bfa);
+  border-radius: 50%;
+}

@@ -7,6 +7,7 @@ import (
 	"api/internal/helpers"
 	"api/internal/middleware"
 	"api/internal/models"
+	"api/internal/services"
 	"errors"
 
 	"github.com/go-playground/validator/v10"
@@ -229,5 +230,95 @@ func UpdateProfile(c *fiber.Ctx) error {
 		Roles:     []string(user.Roles),
 		CreatedAt: user.CreatedAt.Format("2006-01-02T15:04:05Z"),
 		UpdatedAt: user.UpdatedAt.Format("2006-01-02T15:04:05Z"),
+	})
+}
+
+func ForgotPassword(c *fiber.Ctx) error {
+	var req dto.ForgotPasswordRequest
+	if err := c.BodyParser(&req); err != nil {
+		return helpers.ValidationErrorResponse(c, "Invalid request body")
+	}
+
+	if err := validate.Struct(req); err != nil {
+		return helpers.ValidationErrorResponse(c, helpers.FormatValidationError(err))
+	}
+
+	var user models.User
+	result := database.DB.Where("email = ?", helpers.NormalizeEmail(req.Email)).First(&user)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return helpers.SuccessResponse(c, fiber.StatusOK, dto.MessageResponse{
+				Message: "If an account with that email exists, a password reset link has been sent.",
+			})
+		}
+		return helpers.InternalServerErrorResponse(c, "Failed to process request")
+	}
+
+	token, hashedToken, err := auth.GenerateResetToken()
+	if err != nil {
+		return helpers.InternalServerErrorResponse(c, "Failed to generate reset token")
+	}
+
+	resetToken := models.PasswordResetToken{
+		UserID:    user.ID,
+		Token:     hashedToken,
+		ExpiresAt: auth.GetResetTokenExpiration(),
+	}
+
+	result = database.DB.Create(&resetToken)
+	if result.Error != nil {
+		return helpers.InternalServerErrorResponse(c, "Failed to create reset token")
+	}
+
+	emailService := services.NewEmailService()
+	if err := emailService.SendPasswordReset(user.Email, token); err != nil {
+		return helpers.InternalServerErrorResponse(c, "Failed to send reset email")
+	}
+
+	return helpers.SuccessResponse(c, fiber.StatusOK, dto.MessageResponse{
+		Message: "If an account with that email exists, a password reset link has been sent.",
+	})
+}
+
+func ResetPassword(c *fiber.Ctx) error {
+	var req dto.ResetPasswordRequest
+	if err := c.BodyParser(&req); err != nil {
+		return helpers.ValidationErrorResponse(c, "Invalid request body")
+	}
+
+	if err := validate.Struct(req); err != nil {
+		return helpers.ValidationErrorResponse(c, helpers.FormatValidationError(err))
+	}
+
+	hashedToken := auth.HashToken(req.Token)
+
+	var resetToken models.PasswordResetToken
+	result := database.DB.Where("token = ?", hashedToken).First(&resetToken)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return helpers.UnauthorizedResponse(c, "Invalid or expired reset token")
+		}
+		return helpers.InternalServerErrorResponse(c, "Failed to process request")
+	}
+
+	if resetToken.IsExpired() {
+		database.DB.Delete(&resetToken)
+		return helpers.UnauthorizedResponse(c, "Invalid or expired reset token")
+	}
+
+	hashedPassword, err := auth.HashPassword(req.Password)
+	if err != nil {
+		return helpers.InternalServerErrorResponse(c, "Failed to process password")
+	}
+
+	result = database.DB.Model(&models.User{}).Where("id = ?", resetToken.UserID).Update("password", hashedPassword)
+	if result.Error != nil {
+		return helpers.InternalServerErrorResponse(c, "Failed to update password")
+	}
+
+	database.DB.Where("user_id = ?", resetToken.UserID).Delete(&models.PasswordResetToken{})
+
+	return helpers.SuccessResponse(c, fiber.StatusOK, dto.MessageResponse{
+		Message: "Password has been reset successfully.",
 	})
 }

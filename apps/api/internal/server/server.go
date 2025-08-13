@@ -78,6 +78,8 @@ func setupRoutes(app *fiber.App, config Config) {
 	auth := v1.Group("/auth")
 	auth.Post("/register", handlers.Register)
 	auth.Post("/login", handlers.Login)
+	auth.Post("/forgot-password", handlers.ForgotPassword)
+	auth.Post("/reset-password", handlers.ResetPassword)
 
 	// Protected routes
 	protected := v1.Group("/protected")
