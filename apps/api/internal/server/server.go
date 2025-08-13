@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"api/internal/handlers"
+	"api/internal/helpers"
 	"api/internal/middleware"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -26,7 +27,7 @@ type Server struct {
 
 func New(config Config) *Server {
 	app := fiber.New(fiber.Config{
-		ErrorHandler: errorHandler,
+		ErrorHandler: helpers.ErrorHandler,
 	})
 
 	setupMiddleware(app)
@@ -99,16 +100,3 @@ func setupRoutes(app *fiber.App, config Config) {
 	protected.Get("/profile", handlers.GetProfile)
 }
 
-func errorHandler(c *fiber.Ctx, err error) error {
-	code := fiber.StatusInternalServerError
-	message := "Internal Server Error"
-
-	if e, ok := err.(*fiber.Error); ok {
-		code = e.Code
-		message = e.Message
-	}
-
-	return c.Status(code).JSON(fiber.Map{
-		"error": message,
-	})
-}
