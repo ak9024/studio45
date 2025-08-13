@@ -9,6 +9,19 @@ export interface RegisterRequest {
   password: string;
 }
 
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  password: string;
+}
+
+export interface ForgotPasswordResponse {
+  message: string;
+}
+
 export interface LoginResponse {
   token: string;
   user: {
@@ -144,6 +157,70 @@ class AuthService {
   isAuthenticated(): boolean {
     const token = this.getStoredToken();
     return token !== null && !this.isTokenExpired(token);
+  }
+
+  async requestPasswordReset(email: string): Promise<ForgotPasswordResponse> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new ApiError(
+          errorData.message || 'Failed to send reset email',
+          response.status
+        );
+      }
+
+      const data: ForgotPasswordResponse = await response.json();
+      return data;
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      
+      throw new ApiError(
+        'Network error. Please check your connection.',
+        0
+      );
+    }
+  }
+
+  async resetPassword(token: string, password: string): Promise<ForgotPasswordResponse> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token, password }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new ApiError(
+          errorData.message || 'Failed to reset password',
+          response.status
+        );
+      }
+
+      const data: ForgotPasswordResponse = await response.json();
+      return data;
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      
+      throw new ApiError(
+        'Network error. Please check your connection.',
+        0
+      );
+    }
   }
 }
 
