@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -16,8 +17,8 @@ type Claims struct {
 
 func GenerateToken(userID uint, email string) (string, error) {
 	secret := os.Getenv("JWT_SECRET")
-	if secret == "" {
-		secret = "default-secret-key"
+	if secret == "" || secret == "your-secret-key-change-this-in-production" {
+		return "", errors.New("JWT_SECRET environment variable is not properly configured")
 	}
 
 	expirationStr := os.Getenv("JWT_EXPIRATION")
@@ -51,8 +52,8 @@ func GenerateToken(userID uint, email string) (string, error) {
 
 func ValidateToken(tokenString string) (*Claims, error) {
 	secret := os.Getenv("JWT_SECRET")
-	if secret == "" {
-		secret = "default-secret-key"
+	if secret == "" || secret == "your-secret-key-change-this-in-production" {
+		return nil, errors.New("JWT_SECRET environment variable is not properly configured")
 	}
 
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {

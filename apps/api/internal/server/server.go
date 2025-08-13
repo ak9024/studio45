@@ -3,6 +3,8 @@ package server
 import (
 	"fmt"
 	"log"
+	"os"
+	"strings"
 
 	"api/internal/handlers"
 	"api/internal/middleware"
@@ -45,13 +47,36 @@ func (s *Server) Start() error {
 func setupMiddleware(app *fiber.App) {
 	app.Use(recover.New())
 	app.Use(requestid.New())
+	
+	// Logger configuration from environment
+	logFormat := os.Getenv("LOG_FORMAT")
+	if logFormat == "" {
+		logFormat = "[${time}] ${status} - ${latency} ${method} ${path}\n"
+	}
 	app.Use(logger.New(logger.Config{
-		Format: "[${time}] ${status} - ${latency} ${method} ${path}\n",
+		Format: logFormat,
 	}))
+	
+	// CORS configuration from environment
+	allowOrigins := os.Getenv("CORS_ALLOWED_ORIGINS")
+	if allowOrigins == "" {
+		allowOrigins = "*"
+	}
+	
+	allowHeaders := os.Getenv("CORS_ALLOWED_HEADERS")
+	if allowHeaders == "" {
+		allowHeaders = "Origin, Content-Type, Accept, Authorization"
+	}
+	
+	allowMethods := os.Getenv("CORS_ALLOWED_METHODS")
+	if allowMethods == "" {
+		allowMethods = "GET, POST, PUT, DELETE, OPTIONS"
+	}
+	
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "*",
-		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
-		AllowMethods: "GET, POST, PUT, DELETE, OPTIONS",
+		AllowOrigins: allowOrigins,
+		AllowHeaders: allowHeaders,
+		AllowMethods: strings.ReplaceAll(allowMethods, " ", ""),
 	}))
 }
 
