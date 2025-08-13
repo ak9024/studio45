@@ -83,5 +83,6 @@ func setupRoutes(app *fiber.App, config Config) {
 	protected := v1.Group("/protected")
 	protected.Use(middleware.RequireAuth())
 	protected.Get("/profile", handlers.GetProfile)
+	protected.Put("/profile", handlers.UpdateProfile)
 }
 

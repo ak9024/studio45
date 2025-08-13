@@ -22,10 +22,15 @@ type UserResponse struct {
 	Name  string `json:"name"`
 }
 
+type UpdateProfileRequest map[string]interface{}
+
 type ProfileResponse struct {
-	ID        string `json:"id"`
-	Email     string `json:"email"`
-	Name      string `json:"name"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
+	ID        string   `json:"id"`
+	Email     string   `json:"email"`
+	Name      string   `json:"name"`
+	Phone     *string  `json:"phone"`
+	Company   *string  `json:"company"`
+	Roles     []string `json:"roles"`
+	CreatedAt string   `json:"created_at"`
+	UpdatedAt string   `json:"updated_at"`
 }
