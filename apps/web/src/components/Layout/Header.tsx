@@ -3,6 +3,8 @@ import { Button } from '../ui/Button';
 
 export const Header = () => {
   const location = useLocation();
+  const brandTitle = import.meta.env.VITE_APP_TITLE || 'Studio 45';
+  const brandInitial = brandTitle.charAt(0).toUpperCase();
   
   return (
     <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
@@ -10,10 +12,10 @@ export const Header = () => {
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-gradient-to-br from-primary-600 to-primary-700 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">S</span>
+              <span className="text-white font-bold text-sm">{brandInitial}</span>
             </div>
             <span className="font-semibold text-xl text-gray-900 dark:text-white">
-              Studio45
+              {brandTitle}
             </span>
           </Link>
           

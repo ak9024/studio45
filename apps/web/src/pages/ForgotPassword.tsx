@@ -17,6 +17,8 @@ export const ForgotPassword = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState<string>('');
   const { register, handleSubmit, formState: { errors } } = useForm<ForgotPasswordForm>();
+  const brandTitle = import.meta.env.VITE_APP_TITLE;
+  const brandInitial = brandTitle.charAt(0).toUpperCase();
 
   const onSubmit = async (data: ForgotPasswordForm) => {
     setIsLoading(true);
@@ -45,10 +47,10 @@ export const ForgotPassword = () => {
             <div className="text-center">
               <Link to="/" className="inline-flex items-center space-x-2 mb-8">
                 <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl flex items-center justify-center">
-                  <span className="text-white font-bold">S</span>
+                  <span className="text-white font-bold">{brandInitial}</span>
                 </div>
                 <span className="font-semibold text-2xl text-gray-900 dark:text-white">
-                  Studio45
+                  {brandTitle}
                 </span>
               </Link>
             </div>
@@ -123,10 +125,10 @@ export const ForgotPassword = () => {
           <div className="text-center">
             <Link to="/" className="inline-flex items-center space-x-2 mb-8">
               <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold">S</span>
+                <span className="text-white font-bold">{brandInitial}</span>
               </div>
               <span className="font-semibold text-2xl text-gray-900 dark:text-white">
-                Studio45
+                {brandTitle}
               </span>
             </Link>
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white">

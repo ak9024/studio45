@@ -16,6 +16,8 @@ export const Login = () => {
   const { login, isLoading, error, clearError, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>();
+  const brandTitle = import.meta.env.VITE_APP_TITLE || 'Studio 45';
+  const brandInitial = brandTitle.charAt(0).toUpperCase();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -46,10 +48,10 @@ export const Login = () => {
           <div className="text-center">
             <Link to="/" className="inline-flex items-center space-x-2 mb-8">
               <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold">S</span>
+                <span className="text-white font-bold">{brandInitial}</span>
               </div>
               <span className="font-semibold text-2xl text-gray-900 dark:text-white">
-                Studio45
+                {brandTitle}
               </span>
             </Link>
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
