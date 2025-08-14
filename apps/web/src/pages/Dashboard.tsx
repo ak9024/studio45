@@ -1,12 +1,12 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Layout } from '../components/Layout/Layout';
 import { Button } from '../components/ui/Button';
-import { ProfileEdit } from '../components/ProfileEdit';
 import { useAuth } from '../hooks/useAuth';
 
 export const Dashboard = () => {
   const { user, logout, error, clearError } = useAuth();
-  const [showEditProfile, setShowEditProfile] = useState(false);
+  const navigate = useNavigate();
   const [successMessage, setSuccessMessage] = useState('');
 
   const handleLogout = () => {
@@ -15,12 +15,7 @@ export const Dashboard = () => {
 
   const handleEditProfile = () => {
     clearError();
-    setShowEditProfile(true);
-  };
-
-  const handleEditSuccess = () => {
-    setSuccessMessage('Profile updated successfully!');
-    setTimeout(() => setSuccessMessage(''), 3000);
+    navigate('/profile/edit');
   };
 
   return (
@@ -53,7 +48,7 @@ export const Dashboard = () => {
                       onClick={handleEditProfile}
                       className="bg-white/20 hover:bg-white/30 text-white border-white/30"
                     >
-                      Edit Profile
+                      Complete Profile
                     </Button>
                     <Button
                       variant="secondary"
@@ -313,7 +308,7 @@ export const Dashboard = () => {
                       onClick={handleEditProfile}
                       className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
                     >
-                      Complete Profile
+                      Update Profile
                     </Button>
                   </div>
                 </div>
@@ -360,14 +355,6 @@ export const Dashboard = () => {
             </div>
           </div>
         </div>
-        
-        {/* Profile Edit Modal */}
-        {showEditProfile && (
-          <ProfileEdit
-            onClose={() => setShowEditProfile(false)}
-            onSuccess={handleEditSuccess}
-          />
-        )}
       </div>
     </Layout>
   );
