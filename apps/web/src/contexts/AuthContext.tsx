@@ -128,6 +128,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setError(null);
   };
 
+  const hasRole = (role: string): boolean => {
+    return user?.roles?.includes(role) ?? false;
+  };
+
+  const hasAnyRole = (roles: string[]): boolean => {
+    if (!user?.roles) return false;
+    return roles.some(role => user.roles.includes(role));
+  };
+
+  const hasAllRoles = (roles: string[]): boolean => {
+    if (!user?.roles) return false;
+    return roles.every(role => user.roles.includes(role));
+  };
+
+  const isAdmin = hasRole('admin');
+
   const value: AuthContextType = {
     user,
     token,
@@ -139,6 +155,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     logout,
     error,
     clearError,
+    hasRole,
+    hasAnyRole,
+    hasAllRoles,
+    isAdmin,
   };
 
   return (

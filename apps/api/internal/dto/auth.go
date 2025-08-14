@@ -47,3 +47,18 @@ type ResetPasswordRequest struct {
 type MessageResponse struct {
 	Message string `json:"message"`
 }
+
+type UserManagementResponse struct {
+	ID        string   `json:"id"`
+	Email     string   `json:"email"`
+	Name      string   `json:"name"`
+	Phone     *string  `json:"phone"`
+	Company   *string  `json:"company"`
+	Roles     []string `json:"roles"`
+	CreatedAt string   `json:"created_at"`
+	UpdatedAt string   `json:"updated_at"`
+}
+
+type UpdateRolesRequest struct {
+	Roles []string `json:"roles" validate:"required,min=1"`
+}

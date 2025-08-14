@@ -33,3 +33,7 @@ func NotFoundResponse(c *fiber.Ctx, message string) error {
 func ConflictResponse(c *fiber.Ctx, message string) error {
 	return ErrorResponse(c, fiber.StatusConflict, message)
 }
+
+func ForbiddenResponse(c *fiber.Ctx, message string) error {
+	return ErrorResponse(c, fiber.StatusForbidden, message)
+}

@@ -1,8 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '../ui/Button';
+import { useAuth } from '../../hooks/useAuth';
+import { RoleGuard } from '../RoleGuard';
 
 export const Header = () => {
   const location = useLocation();
+  const { isAuthenticated, user, logout } = useAuth();
   const brandTitle = import.meta.env.VITE_APP_TITLE || 'Studio 45';
   const brandInitial = brandTitle.charAt(0).toUpperCase();
   
@@ -50,19 +53,62 @@ export const Header = () => {
             >
               Contact
             </Link>
+            
+            {isAuthenticated && (
+              <Link 
+                to="/dashboard" 
+                className={`text-sm font-medium transition-colors duration-200 ${
+                  location.pathname === '/dashboard' 
+                    ? 'text-primary-600 dark:text-primary-400' 
+                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                Dashboard
+              </Link>
+            )}
+
+            <RoleGuard role="admin">
+              <Link 
+                to="/admin" 
+                className={`text-sm font-medium transition-colors duration-200 ${
+                  location.pathname === '/admin' 
+                    ? 'text-primary-600 dark:text-primary-400' 
+                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                Admin
+              </Link>
+            </RoleGuard>
           </nav>
           
           <div className="flex items-center space-x-3">
-            <Link to="/login">
-              <Button variant="ghost" size="sm">
-                Sign In
-              </Button>
-            </Link>
-            <Link to="/register">
-              <Button size="sm">
-                Get Started
-              </Button>
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <span className="text-sm text-gray-600 dark:text-gray-300">
+                  Welcome, {user?.name}
+                </span>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={logout}
+                >
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button variant="ghost" size="sm">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/register">
+                  <Button size="sm">
+                    Get Started
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>

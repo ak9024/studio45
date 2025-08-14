@@ -5,6 +5,7 @@ import { Layout } from '../components/Layout/Layout';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { useAuth } from '../hooks/useAuth';
+import { useToast } from '../contexts/ToastContext';
 
 interface RegisterForm {
   name: string;
@@ -74,6 +75,7 @@ const PasswordStrengthIndicator = ({ password }: { password: string }) => {
 
 export const Register = () => {
   const { register: registerUser, isLoading, error, clearError, isAuthenticated } = useAuth();
+  const { showError, showSuccess } = useToast();
   const navigate = useNavigate();
   const { register, handleSubmit, formState: { errors }, watch } = useForm<RegisterForm>();
   const brandTitle = import.meta.env.VITE_APP_TITLE || 'Studio 45';
@@ -98,9 +100,10 @@ export const Register = () => {
         email: data.email,
         password: data.password,
       });
+      showSuccess('Account Created!', 'Welcome to Studio45! You have been successfully registered.');
       navigate('/dashboard');
-    } catch {
-      // Error is handled by AuthContext
+    } catch (err: any) {
+      showError('Registration Failed', err.message || 'An error occurred during registration.');
     }
   };
 

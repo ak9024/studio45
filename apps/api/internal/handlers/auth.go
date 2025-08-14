@@ -12,7 +12,6 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
-	"github.com/lib/pq"
 	"gorm.io/gorm"
 )
 
@@ -45,6 +44,13 @@ func Register(c *fiber.Ctx) error {
 			return helpers.ConflictResponse(c, "Email already exists")
 		}
 		return helpers.InternalServerErrorResponse(c, "Failed to create user")
+	}
+
+	// Assign default user role
+	rbacService := services.NewRBACService()
+	err = rbacService.AssignRoleToUser(user.ID, "user", nil)
+	if err != nil {
+		return helpers.InternalServerErrorResponse(c, "Failed to assign default role")
 	}
 
 	token, err := auth.GenerateToken(user.ID, user.Email)
@@ -106,10 +112,10 @@ func GetProfile(c *fiber.Ctx) error {
 		return helpers.UnauthorizedResponse(c, "User not authenticated")
 	}
 
-	var user models.User
-	result := database.DB.Where("id = ?", userID).First(&user)
-	if result.Error != nil {
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+	rbacService := services.NewRBACService()
+	user, err := rbacService.GetUserWithRoles(userID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return helpers.NotFoundResponse(c, "User not found")
 		}
 		return helpers.InternalServerErrorResponse(c, "Failed to fetch user profile")
@@ -121,7 +127,7 @@ func GetProfile(c *fiber.Ctx) error {
 		Name:      user.Name,
 		Phone:     user.Phone,
 		Company:   user.Company,
-		Roles:     []string(user.Roles),
+		Roles:     user.GetRoleNames(),
 		CreatedAt: user.CreatedAt.Format("2006-01-02T15:04:05Z"),
 		UpdatedAt: user.UpdatedAt.Format("2006-01-02T15:04:05Z"),
 	})
@@ -151,8 +157,6 @@ func UpdateProfile(c *fiber.Ctx) error {
 
 	// Build updates map for selective updates
 	updates := make(map[string]interface{})
-	hasRoles := false
-	var rolesValue []string
 	
 	// Process each field in the request
 	for key, value := range req {
@@ -173,27 +177,12 @@ func UpdateProfile(c *fiber.Ctx) error {
 					updates["company"] = v
 				}
 			}
-		case "roles":
-			if v, ok := value.([]interface{}); ok {
-				roles := make([]string, 0, len(v))
-				for _, role := range v {
-					if r, ok := role.(string); ok {
-						roles = append(roles, r)
-					}
-				}
-				rolesValue = roles
-				hasRoles = true
-			} else if v, ok := value.([]string); ok {
-				// Handle case where it's already a string array
-				rolesValue = v
-				hasRoles = true
-			}
 		case "name":
 			if v, ok := value.(string); ok && v != "" {
 				updates["name"] = v
 			}
-		// Skip protected fields
-		case "id", "email", "password", "created_at", "updated_at", "deleted_at":
+		// Skip protected fields (including roles - handled separately via admin endpoints)
+		case "id", "email", "password", "roles", "created_at", "updated_at", "deleted_at":
 			continue
 		// For any other fields, you can add more cases as needed
 		default:
@@ -201,7 +190,7 @@ func UpdateProfile(c *fiber.Ctx) error {
 		}
 	}
 
-	// Update non-array fields first
+	// Update fields
 	if len(updates) > 0 {
 		result = database.DB.Model(&user).Updates(updates)
 		if result.Error != nil {
@@ -209,27 +198,22 @@ func UpdateProfile(c *fiber.Ctx) error {
 		}
 	}
 	
-	// Handle roles array separately with raw SQL
-	if hasRoles {
-		result = database.DB.Exec("UPDATE users SET roles = $1, updated_at = NOW() WHERE id = $2", 
-			pq.Array(rolesValue), userID)
-		if result.Error != nil {
-			return helpers.InternalServerErrorResponse(c, "Failed to update roles")
-		}
+	// Reload the user with roles
+	rbacService := services.NewRBACService()
+	updatedUser, err := rbacService.GetUserWithRoles(userID)
+	if err != nil {
+		return helpers.InternalServerErrorResponse(c, "Failed to fetch updated profile")
 	}
-	
-	// Reload the user to get the updated values
-	database.DB.Where("id = ?", userID).First(&user)
 
 	return helpers.SuccessResponse(c, fiber.StatusOK, dto.ProfileResponse{
-		ID:        user.ID,
-		Email:     user.Email,
-		Name:      user.Name,
-		Phone:     user.Phone,
-		Company:   user.Company,
-		Roles:     []string(user.Roles),
-		CreatedAt: user.CreatedAt.Format("2006-01-02T15:04:05Z"),
-		UpdatedAt: user.UpdatedAt.Format("2006-01-02T15:04:05Z"),
+		ID:        updatedUser.ID,
+		Email:     updatedUser.Email,
+		Name:      updatedUser.Name,
+		Phone:     updatedUser.Phone,
+		Company:   updatedUser.Company,
+		Roles:     updatedUser.GetRoleNames(),
+		CreatedAt: updatedUser.CreatedAt.Format("2006-01-02T15:04:05Z"),
+		UpdatedAt: updatedUser.UpdatedAt.Format("2006-01-02T15:04:05Z"),
 	})
 }
 

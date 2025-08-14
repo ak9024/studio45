@@ -5,6 +5,7 @@ import { Layout } from '../components/Layout/Layout';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { authService, ApiError } from '../services/auth.service';
+import { useToast } from '../contexts/ToastContext';
 import { ArrowLeft, Mail, CheckCircle } from 'lucide-react';
 
 interface ForgotPasswordForm {
@@ -12,6 +13,7 @@ interface ForgotPasswordForm {
 }
 
 export const ForgotPassword = () => {
+  const { showError, showSuccess } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -28,12 +30,11 @@ export const ForgotPassword = () => {
       await authService.requestPasswordReset(data.email);
       setSubmittedEmail(data.email);
       setIsSuccess(true);
+      showSuccess('Reset Email Sent', `Password reset instructions have been sent to ${data.email}`);
     } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err.message);
-      } else {
-        setError('Something went wrong. Please try again.');
-      }
+      const errorMessage = err instanceof ApiError ? err.message : 'Something went wrong. Please try again.';
+      setError(errorMessage);
+      showError('Error Sending Reset Email', errorMessage);
     } finally {
       setIsLoading(false);
     }

@@ -13,14 +13,12 @@ interface FormErrors {
   name?: string;
   phone?: string;
   company?: string;
-  roles?: string;
 }
 
 interface FormState {
   name: string;
   phone: string;
   company: string;
-  roles: string[];
 }
 
 const formatPhoneNumber = (value: string): string => {
@@ -41,21 +39,17 @@ export const ProfileEdit = ({ onClose, onSuccess }: ProfileEditProps) => {
     name: user?.name || '',
     phone: user?.phone || '',
     company: user?.company || '',
-    roles: user?.roles || [],
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [showSuccess, setShowSuccess] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
-  const [newRole, setNewRole] = useState('');
   const nameInputRef = useRef<HTMLInputElement>(null);
-  const roleInputRef = useRef<HTMLInputElement>(null);
 
   const initialFormData = {
     name: user?.name || '',
     phone: user?.phone || '',
     company: user?.company || '',
-    roles: user?.roles || [],
   };
 
   useEffect(() => {
@@ -90,8 +84,7 @@ export const ProfileEdit = ({ onClose, onSuccess }: ProfileEditProps) => {
     const hasChanges = 
       formData.name !== initialFormData.name ||
       formData.phone !== initialFormData.phone ||
-      formData.company !== initialFormData.company ||
-      JSON.stringify(formData.roles.sort()) !== JSON.stringify(initialFormData.roles.sort());
+      formData.company !== initialFormData.company;
     
     setIsDirty(hasChanges);
   }, [formData, initialFormData]);
@@ -109,35 +102,6 @@ export const ProfileEdit = ({ onClose, onSuccess }: ProfileEditProps) => {
     // Clear field error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
-    }
-  };
-
-  const handleAddRole = () => {
-    const trimmedRole = newRole.trim();
-    if (trimmedRole && !formData.roles.includes(trimmedRole)) {
-      setFormData(prev => ({
-        ...prev,
-        roles: [...prev.roles, trimmedRole]
-      }));
-      setNewRole('');
-      // Clear roles error if it exists
-      if (errors.roles) {
-        setErrors(prev => ({ ...prev, roles: undefined }));
-      }
-    }
-  };
-
-  const handleRemoveRole = (roleToRemove: string) => {
-    setFormData(prev => ({
-      ...prev,
-      roles: prev.roles.filter(role => role !== roleToRemove)
-    }));
-  };
-
-  const handleRoleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleAddRole();
     }
   };
 
@@ -167,14 +131,6 @@ export const ProfileEdit = ({ onClose, onSuccess }: ProfileEditProps) => {
       newErrors.company = 'Company name must be less than 255 characters';
     }
 
-    // Roles validation
-    if (formData.roles.some(role => !role.trim())) {
-      newErrors.roles = 'Roles cannot be empty';
-    } else if (formData.roles.some(role => role.length > 50)) {
-      newErrors.roles = 'Role names must be less than 50 characters';
-    } else if (formData.roles.length !== new Set(formData.roles).size) {
-      newErrors.roles = 'Duplicate roles are not allowed';
-    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -209,9 +165,6 @@ export const ProfileEdit = ({ onClose, onSuccess }: ProfileEditProps) => {
       }
       if (formData.company !== user?.company) {
         updates.company = formData.company.trim() || null;
-      }
-      if (JSON.stringify(formData.roles.sort()) !== JSON.stringify((user?.roles || []).sort())) {
-        updates.roles = formData.roles;
       }
 
       // If no changes, close the form
@@ -380,91 +333,6 @@ export const ProfileEdit = ({ onClose, onSuccess }: ProfileEditProps) => {
               </div>
             </div>
 
-            {/* Roles Management Section */}
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                <svg className="w-5 h-5 mr-2 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                User Roles
-              </h3>
-              
-              <div className="space-y-4">
-                {/* Current Roles */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Current Roles
-                    <span className="text-xs text-gray-500 ml-1">(max 50 characters each)</span>
-                  </label>
-                  <div className="flex flex-wrap gap-2 min-h-[2rem] p-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700">
-                    {formData.roles.length > 0 ? (
-                      formData.roles.map((role, index) => (
-                        <span 
-                          key={index} 
-                          className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 group"
-                        >
-                          {role}
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveRole(role)}
-                            className="ml-2 text-blue-600 hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-100 opacity-70 hover:opacity-100 transition-opacity"
-                            aria-label={`Remove ${role} role`}
-                          >
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        </span>
-                      ))
-                    ) : (
-                      <span className="text-gray-500 dark:text-gray-400 text-sm italic">
-                        No roles assigned
-                      </span>
-                    )}
-                  </div>
-                  {errors.roles && (
-                    <p className="text-red-600 dark:text-red-400 text-xs mt-1">
-                      {errors.roles}
-                    </p>
-                  )}
-                </div>
-
-                {/* Add New Role */}
-                <div>
-                  <label htmlFor="newRole" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Add New Role
-                  </label>
-                  <div className="flex gap-2">
-                    <Input
-                      ref={roleInputRef}
-                      id="newRole"
-                      type="text"
-                      value={newRole}
-                      onChange={(e) => setNewRole(e.target.value)}
-                      onKeyPress={handleRoleKeyPress}
-                      placeholder="Enter role name"
-                      className="flex-1"
-                      maxLength={50}
-                    />
-                    <Button
-                      type="button"
-                      onClick={handleAddRole}
-                      disabled={!newRole.trim() || formData.roles.includes(newRole.trim())}
-                      className="px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
-                      aria-label="Add role"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                      </svg>
-                    </Button>
-                  </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Press Enter or click + to add a role
-                  </p>
-                </div>
-              </div>
-            </div>
-
             {/* Account Information Section (Read-only) */}
             <div className="mb-8">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
@@ -485,6 +353,33 @@ export const ProfileEdit = ({ onClose, onSuccess }: ProfileEditProps) => {
                   </div>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     Contact support to change email
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Current Roles
+                    <span className="text-xs text-gray-500 ml-1">(managed by admin)</span>
+                  </label>
+                  <div className="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2">
+                    <div className="flex flex-wrap gap-2">
+                      {user?.roles && user.roles.length > 0 ? (
+                        user.roles.map((role, index) => (
+                          <span 
+                            key={index} 
+                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                          >
+                            {role}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-gray-500 dark:text-gray-400 text-sm italic">
+                          No roles assigned
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Contact admin to change roles
                   </p>
                 </div>
               </div>

@@ -34,7 +34,7 @@ class ProfileService {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new ApiError(
-          errorData.message || 'Failed to fetch profile',
+          errorData.error || errorData.message || 'Failed to fetch profile',
           response.status
         );
       }
@@ -67,7 +67,7 @@ class ProfileService {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new ApiError(
-          errorData.message || 'Failed to update profile',
+          errorData.error || errorData.message || 'Failed to update profile',
           response.status
         );
       }

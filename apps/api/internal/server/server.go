@@ -86,5 +86,20 @@ func setupRoutes(app *fiber.App, config Config) {
 	protected.Use(middleware.RequireAuth())
 	protected.Get("/profile", handlers.GetProfile)
 	protected.Put("/profile", handlers.UpdateProfile)
+
+	// Admin routes
+	admin := v1.Group("/admin")
+	admin.Use(middleware.RequireAuth())
+	admin.Use(middleware.RequireAdmin())
+	
+	// User management
+	admin.Get("/users", handlers.ListUsers)
+	admin.Put("/users/:id/roles", handlers.UpdateUserRoles)
+	admin.Delete("/users/:id", handlers.DeleteUser)
+	
+	// Role and permission management
+	admin.Get("/roles", handlers.GetAllRoles)
+	admin.Get("/users/:id/permissions", handlers.GetUserPermissions)
+	admin.Get("/users/:id/permissions/:permission", handlers.CheckUserPermission)
 }
 

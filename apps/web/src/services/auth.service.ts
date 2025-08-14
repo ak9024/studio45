@@ -62,7 +62,7 @@ class AuthService {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new ApiError(
-          errorData.message || 'Login failed',
+          errorData.error || errorData.message || 'Login failed',
           response.status
         );
       }
@@ -98,7 +98,7 @@ class AuthService {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new ApiError(
-          errorData.message || 'Registration failed',
+          errorData.error || errorData.message || 'Registration failed',
           response.status
         );
       }
@@ -172,7 +172,7 @@ class AuthService {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new ApiError(
-          errorData.message || 'Failed to send reset email',
+          errorData.error || errorData.message || 'Failed to send reset email',
           response.status
         );
       }
@@ -204,7 +204,7 @@ class AuthService {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new ApiError(
-          errorData.message || 'Failed to reset password',
+          errorData.error || errorData.message || 'Failed to reset password',
           response.status
         );
       }

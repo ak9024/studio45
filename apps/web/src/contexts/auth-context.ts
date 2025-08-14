@@ -13,6 +13,10 @@ export interface AuthContextType {
   logout: () => void;
   error: string | null;
   clearError: () => void;
+  hasRole: (role: string) => boolean;
+  hasAnyRole: (roles: string[]) => boolean;
+  hasAllRoles: (roles: string[]) => boolean;
+  isAdmin: boolean;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);

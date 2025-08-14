@@ -3,6 +3,7 @@ package middleware
 import (
 	"api/internal/auth"
 	"api/internal/helpers"
+	"api/internal/services"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -26,8 +27,17 @@ func RequireAuth() fiber.Handler {
 			return helpers.UnauthorizedResponse(c, "Invalid or expired token")
 		}
 
+		// Fetch user roles from database
+		rbacService := services.NewRBACService()
+		userRoles, err := rbacService.GetUserRoles(claims.UserID)
+		if err != nil {
+			// If we can't fetch roles, still allow but with empty roles
+			userRoles = []string{}
+		}
+
 		c.Locals("userID", claims.UserID)
 		c.Locals("email", claims.Email)
+		c.Locals("userRoles", userRoles)
 
 		return c.Next()
 	}

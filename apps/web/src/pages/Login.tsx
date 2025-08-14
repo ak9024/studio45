@@ -5,6 +5,7 @@ import { Layout } from '../components/Layout/Layout';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { useAuth } from '../hooks/useAuth';
+import { useToast } from '../contexts/ToastContext';
 
 interface LoginForm {
   email: string;
@@ -14,6 +15,7 @@ interface LoginForm {
 
 export const Login = () => {
   const { login, isLoading, error, clearError, isAuthenticated } = useAuth();
+  const { showError, showSuccess } = useToast();
   const navigate = useNavigate();
   const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>();
   const brandTitle = import.meta.env.VITE_APP_TITLE || 'Studio 45';
@@ -35,9 +37,10 @@ export const Login = () => {
         email: data.email,
         password: data.password,
       });
+      showSuccess('Welcome back!', 'You have been successfully logged in.');
       navigate('/dashboard');
-    } catch {
-      // Error is handled by AuthContext
+    } catch (err: any) {
+      showError('Login Failed', err.message || 'An error occurred during login.');
     }
   };
 
