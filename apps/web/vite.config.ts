@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
       {
         name: 'html-transform',
         transformIndexHtml(html) {
-          return html.replace('%VITE_APP_TITLE%', env.VITE_APP_TITLE)
+          return html.replace('%VITE_APP_TITLE%', env.VITE_APP_TITLE || 'Studio45')
         },
       },
     ],
