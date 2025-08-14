@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Layout } from './Layout/Layout';
 import { Button } from './ui/Button';
 import { useAuth } from '../hooks/useAuth';
-import { adminService, ApiError } from '../services/admin.service';
+import { adminService } from '../services/admin.service';
 import type { UserManagement } from '../services/admin.service';
 
 export const AdminDashboardView = () => {

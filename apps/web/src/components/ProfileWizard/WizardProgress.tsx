@@ -68,7 +68,7 @@ export const WizardProgress = ({
             {steps.map((step, stepIndex) => {
               const isCurrent = stepIndex === currentStepIndex;
               const isCompleted = step.isCompleted;
-              const isUpcoming = stepIndex > currentStepIndex && !isCompleted;
+              // const isUpcoming = stepIndex > currentStepIndex && !isCompleted;
               const canNavigate = stepIndex <= currentStepIndex || isCompleted;
 
               return (

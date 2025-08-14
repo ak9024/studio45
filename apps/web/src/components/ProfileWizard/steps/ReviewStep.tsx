@@ -1,7 +1,15 @@
 import { useEffect } from 'react';
-import { Check, Edit, User, Phone, Building2, Mail, Users, Sparkles, Star } from 'lucide-react';
+import { Check, Edit, User, Phone, Mail, Sparkles, Star } from 'lucide-react';
 import { useAuth } from '../../../hooks/useAuth';
 import { Button } from '../../ui/Button';
+
+type ProfileItem = {
+  label: string;
+  value: string | undefined;
+  required?: boolean;
+  readonly?: boolean;
+  placeholder?: string;
+};
 
 interface ReviewStepProps {
   formData: {
@@ -48,7 +56,12 @@ export const ReviewStep = ({ formData, onValidationChange, onEditStep }: ReviewS
   const score = getProfileCompletionScore();
   const completion = getCompletionLevel(score);
 
-  const profileSections = [
+  const profileSections: Array<{
+    title: string;
+    stepIndex: number;
+    icon: any;
+    items: ProfileItem[];
+  }> = [
     {
       title: 'Personal Information',
       stepIndex: 0,
@@ -164,7 +177,7 @@ export const ReviewStep = ({ formData, onValidationChange, onEditStep }: ReviewS
                     </div>
                   </div>
                   
-                  {!section.items.every(item => item.readonly) && (
+                  {!section.items.every(item => item.readonly === true) && (
                     <Button
                       type="button"
                       variant="outline"
@@ -186,8 +199,8 @@ export const ReviewStep = ({ formData, onValidationChange, onEditStep }: ReviewS
                     <div key={itemIndex}>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         {item.label}
-                        {item.required && <span className="text-red-500 ml-1">*</span>}
-                        {item.readonly && <span className="text-gray-400 ml-1">(read-only)</span>}
+                        {item.required === true && <span className="text-red-500 ml-1">*</span>}
+                        {item.readonly === true && <span className="text-gray-400 ml-1">(read-only)</span>}
                       </label>
                       
                       <div className={`px-4 py-3 rounded-lg border ${

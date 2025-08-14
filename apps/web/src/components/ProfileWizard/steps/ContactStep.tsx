@@ -19,15 +19,28 @@ interface ContactStepProps {
 }
 
 const formatPhoneNumber = (value: string): string => {
+  // Remove all non-digits
   const phoneRegex = /[^\d]/g;
-  const phone = value.replace(phoneRegex, '');
+  let phone = value.replace(phoneRegex, '');
+  
+  // Handle Indonesian mobile numbers starting with 62 (country code)
+  if (phone.startsWith('62') && phone.length > 2) {
+    phone = '0' + phone.slice(2); // Convert +62 to 0
+  }
+  
   const phoneLength = phone.length;
   
-  if (phoneLength < 4) return phone;
-  if (phoneLength < 7) {
-    return `(${phone.slice(0, 3)}) ${phone.slice(3)}`;
+  // Format Indonesian mobile numbers (0XXX-XXXX-XXXX)
+  if (phoneLength <= 4) return phone;
+  if (phoneLength <= 8) {
+    return `${phone.slice(0, 4)}-${phone.slice(4)}`;
   }
-  return `(${phone.slice(0, 3)}) ${phone.slice(3, 6)}-${phone.slice(6, 10)}`;
+  if (phoneLength <= 12) {
+    return `${phone.slice(0, 4)}-${phone.slice(4, 8)}-${phone.slice(8)}`;
+  }
+  
+  // Limit to 12 digits for Indonesian numbers
+  return `${phone.slice(0, 4)}-${phone.slice(4, 8)}-${phone.slice(8, 12)}`;
 };
 
 export const ContactStep = ({
@@ -56,19 +69,26 @@ export const ContactStep = ({
   const validatePhone = (value: string): string | undefined => {
     if (!value.trim()) return undefined; // Optional field
     
-    const phoneRegex = /^\(\d{3}\) \d{3}-\d{4}$|^\d{10}$/;
     const cleanPhone = value.replace(/[^\d]/g, '');
     
+    // Indonesian mobile numbers: 08XX-XXXX-XXXX (10-12 digits total)
+    // Valid prefixes: 081, 082, 083, 085, 087, 088, 089, etc.
+    const indonesianMobileRegex = /^08\d{8,10}$/;
+    const formattedRegex = /^08\d{2}-\d{4}-\d{4}$/;
+    
     if (cleanPhone.length > 0 && cleanPhone.length < 10) {
-      return 'Phone number must be 10 digits';
+      return 'Phone number must be at least 10 digits';
     }
     
-    if (cleanPhone.length > 10) {
-      return 'Phone number cannot exceed 10 digits';
+    if (cleanPhone.length > 13) {
+      return 'Phone number cannot exceed 13 digits';
     }
     
-    if (value.trim() && !phoneRegex.test(value) && cleanPhone.length !== 10) {
-      return 'Please enter a valid 10-digit phone number';
+    // Check if it's a valid Indonesian mobile number
+    if (cleanPhone.length >= 10) {
+      if (!indonesianMobileRegex.test(cleanPhone) && !formattedRegex.test(value)) {
+        return 'Please enter a valid Indonesian mobile number (08XX-XXXX-XXXX)';
+      }
     }
     
     return undefined;
@@ -161,14 +181,14 @@ export const ContactStep = ({
             value={phoneValue}
             onChange={(e) => handlePhoneChange(e.target.value)}
             error={phoneError}
-            placeholder="(555) 123-4567"
-            maxLength={14}
+            placeholder="0821-1234-5678"
+            maxLength={15}
             className="text-lg"
             aria-describedby="phone-help"
           />
           
           <p id="phone-help" className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-            Format: (123) 456-7890 • Used for important account notifications
+            Format: 08XX-XXXX-XXXX • Indonesian mobile number for account notifications
           </p>
         </div>
 

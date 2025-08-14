@@ -181,6 +181,18 @@ func (s *RBACService) GetAllUsersWithRoles() ([]models.User, error) {
 	return users, err
 }
 
+// UpdateUser updates user information
+func (s *RBACService) UpdateUser(userID string, updates map[string]interface{}) error {
+	result := s.db.Model(&models.User{}).Where("id = ?", userID).Updates(updates)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return errors.New("user not found")
+	}
+	return nil
+}
+
 // DeleteUser soft deletes a user
 func (s *RBACService) DeleteUser(userID string) error {
 	var user models.User

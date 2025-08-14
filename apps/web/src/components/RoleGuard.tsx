@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { useAuth } from '../hooks/useAuth';
 
 interface RoleGuardProps {

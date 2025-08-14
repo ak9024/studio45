@@ -7,7 +7,7 @@ import { useAuth } from '../hooks/useAuth';
 export const UserDashboardView = () => {
   const { user, logout, error, clearError } = useAuth();
   const navigate = useNavigate();
-  const [successMessage, setSuccessMessage] = useState('');
+  const [successMessage] = useState('');
 
   const handleLogout = () => {
     logout();

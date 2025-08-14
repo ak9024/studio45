@@ -1,9 +1,10 @@
 package dto
 
 type RegisterRequest struct {
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required,min=6"`
-	Name     string `json:"name" validate:"required,min=2"`
+	Email    string  `json:"email" validate:"required,email"`
+	Password string  `json:"password" validate:"required,min=6"`
+	Name     string  `json:"name" validate:"required,min=2"`
+	Phone    *string `json:"phone,omitempty" validate:"omitempty,phone"`
 }
 
 type LoginRequest struct {
@@ -61,4 +62,11 @@ type UserManagementResponse struct {
 
 type UpdateRolesRequest struct {
 	Roles []string `json:"roles" validate:"required,min=1"`
+}
+
+type UpdateUserRequest struct {
+	Email   *string `json:"email,omitempty" validate:"omitempty,email"`
+	Name    *string `json:"name,omitempty" validate:"omitempty,min=2"`
+	Phone   *string `json:"phone,omitempty" validate:"omitempty,phone"`
+	Company *string `json:"company,omitempty"`
 }

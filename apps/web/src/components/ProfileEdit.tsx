@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, KeyboardEvent } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import { useAuth } from '../hooks/useAuth';
@@ -22,15 +22,28 @@ interface FormState {
 }
 
 const formatPhoneNumber = (value: string): string => {
+  // Remove all non-digits
   const phoneRegex = /[^\d]/g;
-  const phone = value.replace(phoneRegex, '');
+  let phone = value.replace(phoneRegex, '');
+  
+  // Handle Indonesian mobile numbers starting with 62 (country code)
+  if (phone.startsWith('62') && phone.length > 2) {
+    phone = '0' + phone.slice(2); // Convert +62 to 0
+  }
+  
   const phoneLength = phone.length;
   
-  if (phoneLength < 4) return phone;
-  if (phoneLength < 7) {
-    return `(${phone.slice(0, 3)}) ${phone.slice(3)}`;
+  // Format Indonesian mobile numbers (0XXX-XXXX-XXXX)
+  if (phoneLength <= 4) return phone;
+  if (phoneLength <= 8) {
+    return `${phone.slice(0, 4)}-${phone.slice(4)}`;
   }
-  return `(${phone.slice(0, 3)}) ${phone.slice(3, 6)}-${phone.slice(6, 10)}`;
+  if (phoneLength <= 12) {
+    return `${phone.slice(0, 4)}-${phone.slice(4, 8)}-${phone.slice(8)}`;
+  }
+  
+  // Limit to 12 digits for Indonesian numbers
+  return `${phone.slice(0, 4)}-${phone.slice(4, 8)}-${phone.slice(8, 12)}`;
 };
 
 export const ProfileEdit = ({ onClose, onSuccess }: ProfileEditProps) => {
@@ -57,14 +70,14 @@ export const ProfileEdit = ({ onClose, onSuccess }: ProfileEditProps) => {
     nameInputRef.current?.focus();
 
     // Handle escape key
-    const handleEscape = (e: KeyboardEvent) => {
+    const handleEscape = (e: globalThis.KeyboardEvent) => {
       if (e.key === 'Escape') {
         handleClose();
       }
     };
 
     // Handle save shortcut
-    const handleSave = (e: KeyboardEvent) => {
+    const handleSave = (e: globalThis.KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 's') {
         e.preventDefault();
         handleSubmit(e as any);
@@ -119,10 +132,18 @@ export const ProfileEdit = ({ onClose, onSuccess }: ProfileEditProps) => {
 
     // Phone validation
     if (formData.phone?.trim()) {
-      const phoneRegex = /^\(\d{3}\) \d{3}-\d{4}$|^\d{10}$/;
       const cleanPhone = formData.phone.replace(/[^\d]/g, '');
-      if (!phoneRegex.test(formData.phone) && cleanPhone.length !== 10) {
-        newErrors.phone = 'Please enter a valid 10-digit phone number';
+      
+      // Indonesian mobile numbers: 08XX-XXXX-XXXX (10-12 digits total)
+      const indonesianMobileRegex = /^08\d{8,10}$/;
+      const formattedRegex = /^08\d{2}-\d{4}-\d{4}$/;
+      
+      if (cleanPhone.length < 10) {
+        newErrors.phone = 'Phone number must be at least 10 digits';
+      } else if (cleanPhone.length > 13) {
+        newErrors.phone = 'Phone number cannot exceed 13 digits';
+      } else if (!indonesianMobileRegex.test(cleanPhone) && !formattedRegex.test(formData.phone)) {
+        newErrors.phone = 'Please enter a valid Indonesian mobile number (08XX-XXXX-XXXX)';
       }
     }
 
@@ -302,12 +323,12 @@ export const ProfileEdit = ({ onClose, onSuccess }: ProfileEditProps) => {
                     value={formData.phone}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
                     error={errors.phone}
-                    placeholder="(555) 123-4567"
+                    placeholder="0821-1234-5678"
                     aria-describedby="phone-help"
-                    maxLength={14}
+                    maxLength={15}
                   />
                   <p id="phone-help" className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Format: (123) 456-7890
+                    Format: 08XX-XXXX-XXXX • Indonesian mobile number
                   </p>
                 </div>
 

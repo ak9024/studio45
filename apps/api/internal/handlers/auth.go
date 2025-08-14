@@ -7,6 +7,7 @@ import (
 	"api/internal/helpers"
 	"api/internal/middleware"
 	"api/internal/models"
+	"api/internal/pkg/phonenumbers"
 	"api/internal/services"
 	"errors"
 
@@ -16,6 +17,12 @@ import (
 )
 
 var validate = validator.New()
+
+func init() {
+	if err := helpers.RegisterCustomValidators(validate); err != nil {
+		panic("Failed to register custom validators: " + err.Error())
+	}
+}
 
 func Register(c *fiber.Ctx) error {
 	var req dto.RegisterRequest
@@ -36,6 +43,14 @@ func Register(c *fiber.Ctx) error {
 		Email:    helpers.NormalizeEmail(req.Email),
 		Password: hashedPassword,
 		Name:     helpers.TrimString(req.Name),
+	}
+
+	if req.Phone != nil && *req.Phone != "" {
+		normalizedPhone, err := phonenumbers.NormalizeNumber(*req.Phone, phonenumbers.DefaultPhoneRegion)
+		if err != nil {
+			return helpers.ValidationErrorResponse(c, "Invalid phone number format")
+		}
+		user.Phone = &normalizedPhone
 	}
 
 	result := database.DB.Create(&user)
@@ -166,7 +181,14 @@ func UpdateProfile(c *fiber.Ctx) error {
 				if v == "" {
 					updates["phone"] = nil
 				} else {
-					updates["phone"] = v
+					if !phonenumbers.IsValidNumber(v, phonenumbers.DefaultPhoneRegion) {
+						return helpers.ValidationErrorResponse(c, "Invalid phone number format")
+					}
+					normalizedPhone, err := phonenumbers.NormalizeNumber(v, phonenumbers.DefaultPhoneRegion)
+					if err != nil {
+						return helpers.ValidationErrorResponse(c, "Invalid phone number format")
+					}
+					updates["phone"] = normalizedPhone
 				}
 			}
 		case "company":

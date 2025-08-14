@@ -94,6 +94,7 @@ func setupRoutes(app *fiber.App, config Config) {
 	
 	// User management
 	admin.Get("/users", handlers.ListUsers)
+	admin.Put("/users/:id", handlers.UpdateUser)
 	admin.Put("/users/:id/roles", handlers.UpdateUserRoles)
 	admin.Delete("/users/:id", handlers.DeleteUser)
 	
