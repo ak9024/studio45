@@ -73,12 +73,19 @@ func Register(c *fiber.Ctx) error {
 		return helpers.InternalServerErrorResponse(c, "Failed to generate token")
 	}
 
+	// Get user roles (should include the default "user" role that was just assigned)
+	userWithRoles, err := rbacService.GetUserWithRoles(user.ID)
+	if err != nil {
+		return helpers.InternalServerErrorResponse(c, "Failed to fetch user roles")
+	}
+
 	return helpers.SuccessResponse(c, fiber.StatusCreated, dto.AuthResponse{
 		Token: token,
 		User: dto.UserResponse{
 			ID:    user.ID,
 			Email: user.Email,
 			Name:  user.Name,
+			Roles: userWithRoles.GetRoleNames(),
 		},
 	})
 }
@@ -111,12 +118,20 @@ func Login(c *fiber.Ctx) error {
 		return helpers.InternalServerErrorResponse(c, "Failed to generate token")
 	}
 
+	// Get user roles
+	rbacService := services.NewRBACService()
+	userWithRoles, err := rbacService.GetUserWithRoles(user.ID)
+	if err != nil {
+		return helpers.InternalServerErrorResponse(c, "Failed to fetch user roles")
+	}
+
 	return helpers.SuccessResponse(c, fiber.StatusOK, dto.AuthResponse{
 		Token: token,
 		User: dto.UserResponse{
 			ID:    user.ID,
 			Email: user.Email,
 			Name:  user.Name,
+			Roles: userWithRoles.GetRoleNames(),
 		},
 	})
 }
