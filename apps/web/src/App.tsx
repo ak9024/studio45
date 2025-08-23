@@ -1,6 +1,9 @@
 
 import { Routes, Route, Link, Navigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
+import { AuthProvider, useAuth } from "@/contexts/AuthContext"
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute"
+import { ToastProvider } from "@/hooks/useToast"
 import { LoginPage } from "./pages/auth/LoginPage"
 import { RegisterPage } from "./pages/auth/RegisterPage"
 import { AuthPage } from "./pages/auth/AuthPage"
@@ -13,6 +16,11 @@ import { SettingsPage } from "./pages/settings/SettingsPage"
 
 function HomePage() {
   const appTitle = import.meta.env.VITE_APP_TITLE || 'My App'
+  const { isAuthenticated } = useAuth()
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -58,14 +66,42 @@ function HomePage() {
   )
 }
 
-function App() {
+function AppContent() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
-      <Route path="/dashboard" element={<DashboardPage />} />
-      <Route path="/analytics" element={<AnalyticsPage />} />
-      <Route path="/users" element={<UsersPage />} />
-      <Route path="/settings" element={<SettingsPage />} />
+      <Route 
+        path="/dashboard" 
+        element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/analytics" 
+        element={
+          <ProtectedRoute>
+            <AnalyticsPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/users" 
+        element={
+          <ProtectedRoute requiredRoles={['admin']}>
+            <UsersPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/settings" 
+        element={
+          <ProtectedRoute>
+            <SettingsPage />
+          </ProtectedRoute>
+        } 
+      />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/auth" element={<AuthPage />} />
@@ -73,6 +109,16 @@ function App() {
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+  )
+}
+
+function App() {
+  return (
+    <ToastProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </ToastProvider>
   )
 }
 

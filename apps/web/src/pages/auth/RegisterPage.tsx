@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { Eye, EyeOff } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -9,11 +9,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { registerSchema, type RegisterFormData } from "@/lib/schemas/auth"
+import { useAuth } from "@/hooks/useAuth"
 
 export function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const { register: registerUser, isLoading } = useAuth()
+  const navigate = useNavigate()
 
   const {
     register,
@@ -24,15 +27,13 @@ export function RegisterPage() {
   })
 
   const onSubmit = async (data: RegisterFormData) => {
-    setIsLoading(true)
     try {
-      console.log("Register data:", data)
-      // TODO: Implement actual registration logic here
-      await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
-    } catch (error) {
+      setError(null)
+      await registerUser(data.name, data.email, data.password)
+      navigate('/dashboard', { replace: true })
+    } catch (error: any) {
       console.error("Registration error:", error)
-    } finally {
-      setIsLoading(false)
+      setError(error.response?.data?.message || error.message || "Registration failed. Please try again.")
     }
   }
 
@@ -46,6 +47,11 @@ export function RegisterPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded mb-4">
+              {error}
+            </div>
+          )}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>

@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Link } from "react-router-dom"
+import { Link, useNavigate, useLocation } from "react-router-dom"
 import { Eye, EyeOff } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -9,10 +9,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { loginSchema, type LoginFormData } from "@/lib/schemas/auth"
+import { useAuth } from "@/hooks/useAuth"
+import { useToast } from "@/hooks/useToast"
 
 export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const { login, isLoading } = useAuth()
+  const { error: showError, success } = useToast()
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  const from = location.state?.from?.pathname || '/dashboard'
 
   const {
     register,
@@ -23,15 +30,13 @@ export function LoginPage() {
   })
 
   const onSubmit = async (data: LoginFormData) => {
-    setIsLoading(true)
     try {
-      console.log("Login data:", data)
-      // TODO: Implement actual authentication logic here
-      await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
-    } catch (error) {
+      await login(data.email, data.password)
+      success("Welcome back! You've been successfully logged in.")
+      navigate(from, { replace: true })
+    } catch (error: any) {
       console.error("Login error:", error)
-    } finally {
-      setIsLoading(false)
+      showError(error.response?.data?.message || error.message || "Login failed. Please try again.")
     }
   }
 

@@ -3,7 +3,6 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import {
-  Home,
   LayoutDashboard,
   BarChart3,
   Users,
@@ -12,13 +11,13 @@ import {
   ChevronRight,
 } from "lucide-react"
 import { useState } from "react"
+import { useAuth } from "@/hooks/useAuth"
 
 const navigation = [
-  { name: "Home", href: "/", icon: Home },
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Analytics", href: "/analytics", icon: BarChart3 },
-  { name: "Users", href: "/users", icon: Users },
-  { name: "Settings", href: "/settings", icon: Settings },
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: [] },
+  { name: "Analytics", href: "/analytics", icon: BarChart3, roles: [] },
+  { name: "Users", href: "/users", icon: Users, roles: ['admin'] },
+  { name: "Settings", href: "/settings", icon: Settings, roles: [] },
 ]
 
 interface SidebarProps {
@@ -28,6 +27,13 @@ interface SidebarProps {
 export function Sidebar({ className }: SidebarProps) {
   const location = useLocation()
   const [collapsed, setCollapsed] = useState(false)
+  const { user } = useAuth()
+
+  const filteredNavigation = navigation.filter(item => {
+    if (item.roles.length === 0) return true
+    return user && user.roles && Array.isArray(user.roles) && 
+           item.roles.some(role => user.roles.includes(role))
+  })
 
   return (
     <div
@@ -62,7 +68,7 @@ export function Sidebar({ className }: SidebarProps) {
 
       {/* Navigation */}
       <nav className="flex-1 space-y-1 p-2">
-        {navigation.map((item) => {
+        {filteredNavigation.map((item) => {
           const isActive = location.pathname === item.href
           return (
             <Link

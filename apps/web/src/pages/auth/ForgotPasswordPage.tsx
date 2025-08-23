@@ -9,10 +9,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { forgotPasswordSchema, type ForgotPasswordFormData } from "@/lib/schemas/auth"
+import { authService } from "@/services/api"
 
 export function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const {
     register,
@@ -25,13 +27,17 @@ export function ForgotPasswordPage() {
 
   const onSubmit = async (data: ForgotPasswordFormData) => {
     setIsLoading(true)
+    setError(null)
     try {
-      console.log("Forgot password data:", data)
-      // TODO: Implement actual password reset logic here
-      await new Promise(resolve => setTimeout(resolve, 2000)) // Simulate API call
-      setIsSubmitted(true)
-    } catch (error) {
+      const response = await authService.forgotPassword(data)
+      if (response.success) {
+        setIsSubmitted(true)
+      } else {
+        setError(response.message || "Failed to send reset email")
+      }
+    } catch (error: any) {
       console.error("Forgot password error:", error)
+      setError(error.response?.data?.message || error.message || "Failed to send reset email")
     } finally {
       setIsLoading(false)
     }
@@ -63,7 +69,10 @@ export function ForgotPasswordPage() {
                 type="button" 
                 variant="outline" 
                 className="w-full"
-                onClick={() => setIsSubmitted(false)}
+                onClick={() => {
+                  setIsSubmitted(false)
+                  setError(null)
+                }}
               >
                 Try again
               </Button>
@@ -94,6 +103,11 @@ export function ForgotPasswordPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded mb-4">
+              {error}
+            </div>
+          )}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>

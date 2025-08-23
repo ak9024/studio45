@@ -7,15 +7,20 @@ import { StatsCards } from "./components/StatsCards"
 import { RevenueChart } from "./components/RevenueChart"
 import { RecentSales } from "./components/RecentSales"
 import { Overview } from "./components/Overview"
+import { useAuth } from "@/hooks/useAuth"
 
 export function DashboardPage() {
+  const { user } = useAuth()
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+            <h2 className="text-3xl font-bold tracking-tight">
+              Welcome back, {user?.name?.split(' ')[0] || 'User'}!
+            </h2>
             <p className="text-muted-foreground">
               Here's what's happening with your business today.
             </p>
