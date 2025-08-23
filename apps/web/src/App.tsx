@@ -8,13 +8,15 @@ import { ForgotPasswordPage } from "./pages/auth/ForgotPasswordPage"
 import { ResetPasswordPage } from "./pages/auth/ResetPasswordPage"
 
 function HomePage() {
+  const appTitle = import.meta.env.VITE_APP_TITLE || 'My App'
+
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <h1 className="text-xl font-semibold">My App</h1>
+              <h1 className="text-xl font-semibold">{appTitle}</h1>
             </div>
             <div className="flex items-center space-x-4">
               <Link to="/login">
@@ -32,7 +34,7 @@ function HomePage() {
         <div className="px-4 py-6 sm:px-0">
           <div className="text-center">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Welcome to My App
+              Welcome to {appTitle}
             </h2>
             <p className="text-lg text-gray-600 mb-8">
               Get started by creating an account or signing in to your existing account.

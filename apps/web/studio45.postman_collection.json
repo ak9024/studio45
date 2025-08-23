@@ -1,0 +1,485 @@
+{
+	"info": {
+		"_postman_id": "d33e3b77-0813-4f45-b6e3-10c68dcb7c81",
+		"name": "studio45",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "42525992"
+	},
+	"item": [
+		{
+			"name": "admin",
+			"item": [
+				{
+					"name": "/api/v1/admin/users",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiOTg5MGMyZjgtMGVkZC00YjVmLWI5MTUtMWM2OTQzZGE1NjhhIiwiZW1haWwiOiJhZGlhdG1hOTAyNEBnbWFpbC5jb20iLCJleHAiOjE3NTUyMTg5MTMsIm5iZiI6MTc1NTEzMjUxMywiaWF0IjoxNzU1MTMyNTEzfQ.it6mO9eGwl_04h7FpAArysR66aTNCtxlMQ4Eq_tgcHY",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/admin/users",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/api/v1/admin/users/:id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiOTg5MGMyZjgtMGVkZC00YjVmLWI5MTUtMWM2OTQzZGE1NjhhIiwiZW1haWwiOiJhZGlhdG1hOTAyNEBnbWFpbC5jb20iLCJleHAiOjE3NTUyMTg5MTMsIm5iZiI6MTc1NTEzMjUxMywiaWF0IjoxNzU1MTMyNTEzfQ.it6mO9eGwl_04h7FpAArysR66aTNCtxlMQ4Eq_tgcHY",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/admin/users/634189df-d669-4f71-9f2b-e58170e15cdd",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"users",
+								"634189df-d669-4f71-9f2b-e58170e15cdd"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/api/v1/admin/users/:id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiOTg5MGMyZjgtMGVkZC00YjVmLWI5MTUtMWM2OTQzZGE1NjhhIiwiZW1haWwiOiJhZGlhdG1hOTAyNEBnbWFpbC5jb20iLCJleHAiOjE3NTUyMTg5MTMsIm5iZiI6MTc1NTEzMjUxMywiaWF0IjoxNzU1MTMyNTEzfQ.it6mO9eGwl_04h7FpAArysR66aTNCtxlMQ4Eq_tgcHY",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"adiatma.mail@gmail.com\",\n    \"name\": \"Adiatma Kamarudin\",\n    \"phone\": \"081342050828\",\n    \"company\": \"PT Testing\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/admin/users/9890c2f8-0edd-4b5f-b915-1c6943da568a",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"users",
+								"9890c2f8-0edd-4b5f-b915-1c6943da568a"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/api/v1/admin/users/:id/roles",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiOTg5MGMyZjgtMGVkZC00YjVmLWI5MTUtMWM2OTQzZGE1NjhhIiwiZW1haWwiOiJhZGlhdG1hOTAyNEBnbWFpbC5jb20iLCJyb2xlcyI6WyJhZG1pbiIsImNyZXciLCJleHRyYSJdLCJleHAiOjE3NTUyMTU2OTYsIm5iZiI6MTc1NTEyOTI5NiwiaWF0IjoxNzU1MTI5Mjk2fQ.8ndAx-JHBYQ3iJ13qRGeqGJgTJP5HqYq8zRfEZ7b4vw",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"roles\": [\"user\", \"admin\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/admin/users/634189df-d669-4f71-9f2b-e58170e15cdd/roles",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"users",
+								"634189df-d669-4f71-9f2b-e58170e15cdd",
+								"roles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "api/v1/admin/users/:id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiOTg5MGMyZjgtMGVkZC00YjVmLWI5MTUtMWM2OTQzZGE1NjhhIiwiZW1haWwiOiJhZGlhdG1hOTAyNEBnbWFpbC5jb20iLCJleHAiOjE3NTUyMTg5MTMsIm5iZiI6MTc1NTEzMjUxMywiaWF0IjoxNzU1MTMyNTEzfQ.it6mO9eGwl_04h7FpAArysR66aTNCtxlMQ4Eq_tgcHY",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/admin/users/634189df-d669-4f71-9f2b-e58170e15cdd",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"users",
+								"634189df-d669-4f71-9f2b-e58170e15cdd"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/api/v1/admin/roles",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiOTg5MGMyZjgtMGVkZC00YjVmLWI5MTUtMWM2OTQzZGE1NjhhIiwiZW1haWwiOiJhZGlhdG1hOTAyNEBnbWFpbC5jb20iLCJleHAiOjE3NTUyMTczNjUsIm5iZiI6MTc1NTEzMDk2NSwiaWF0IjoxNzU1MTMwOTY1fQ.NCQTd3MQhfxlTrsfkTcVz9bU-thKd_angCbE6_rl7q4",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/admin/roles",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"roles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/api/v1/admin/users/:id/permissions",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiOTg5MGMyZjgtMGVkZC00YjVmLWI5MTUtMWM2OTQzZGE1NjhhIiwiZW1haWwiOiJhZGlhdG1hOTAyNEBnbWFpbC5jb20iLCJleHAiOjE3NTUyMTczNjUsIm5iZiI6MTc1NTEzMDk2NSwiaWF0IjoxNzU1MTMwOTY1fQ.NCQTd3MQhfxlTrsfkTcVz9bU-thKd_angCbE6_rl7q4",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/admin/users/634189df-d669-4f71-9f2b-e58170e15cdd/permissions",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"users",
+								"634189df-d669-4f71-9f2b-e58170e15cdd",
+								"permissions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/api/v1/admin/users/:user_id/permissions/:permission_id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiOTg5MGMyZjgtMGVkZC00YjVmLWI5MTUtMWM2OTQzZGE1NjhhIiwiZW1haWwiOiJhZGlhdG1hOTAyNEBnbWFpbC5jb20iLCJleHAiOjE3NTUyMTczNjUsIm5iZiI6MTc1NTEzMDk2NSwiaWF0IjoxNzU1MTMwOTY1fQ.NCQTd3MQhfxlTrsfkTcVz9bU-thKd_angCbE6_rl7q4",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/admin/users/634189df-d669-4f71-9f2b-e58170e15cdd/permissions/057504f4-7645-47e2-b630-1457e824e97d",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"users",
+								"634189df-d669-4f71-9f2b-e58170e15cdd",
+								"permissions",
+								"057504f4-7645-47e2-b630-1457e824e97d"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "api/v1/auth/login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"adiatma9024@gmail.com\",\n    \"password\": \"admin12$\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/auth/login",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "api/v1/auth/register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Adiatma Kamarudin\",\n    \"email\": \"adiatma.mail@example.com\",\n    \"password\": \"test123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/auth/register",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/api/v1/auth/forgot-password",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"adiatma.mail@gmail.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/auth/forgot-password",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"forgot-password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/api/v1/auth/reset-password",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"token\": \"\",\n    \"password\": \"\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/auth/reset-password",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"reset-password"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "protected",
+			"item": [
+				{
+					"name": "/api/v1/protected/profile",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiOTg5MGMyZjgtMGVkZC00YjVmLWI5MTUtMWM2OTQzZGE1NjhhIiwiZW1haWwiOiJhZGlhdG1hOTAyNEBnbWFpbC5jb20iLCJleHAiOjE3NTUxOTE1NzQsIm5iZiI6MTc1NTEwNTE3NCwiaWF0IjoxNzU1MTA1MTc0fQ.Ze7DlrJbnF0ArwvdVHNXZxYF74Ij5JgaoGe3_kYUKMQ",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"adiatma.mail@gmail.com\",\n    \"password\": \"test123\"\n}"
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/protected/profile",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"protected",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/api/v1/protected/profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiOTg5MGMyZjgtMGVkZC00YjVmLWI5MTUtMWM2OTQzZGE1NjhhIiwiZW1haWwiOiJhZGlhdG1hOTAyNEBnbWFpbC5jb20iLCJleHAiOjE3NTUxODcxNzMsIm5iZiI6MTc1NTEwMDc3MywiaWF0IjoxNzU1MTAwNzczfQ.7gXMotd2ldRh8aWF7XByyq0GKxbAr_zkQ_osSt-P7Fo",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"phone\": \"081342050828\",\n    \"roles\": [\"admin\", \"crew\", \"extra\"],\n    \"company\": \"eFishery\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/protected/profile",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"protected",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
