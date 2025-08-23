@@ -97,7 +97,7 @@ function AppContent() {
       <Route 
         path="/settings" 
         element={
-          <ProtectedRoute>
+          <ProtectedRoute requiredRoles={['admin']}>
             <SettingsPage />
           </ProtectedRoute>
         } 

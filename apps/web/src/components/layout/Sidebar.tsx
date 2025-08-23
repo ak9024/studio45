@@ -17,7 +17,7 @@ const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: [] },
   { name: "Analytics", href: "/analytics", icon: BarChart3, roles: [] },
   { name: "Users", href: "/users", icon: Users, roles: ['admin'] },
-  { name: "Settings", href: "/settings", icon: Settings, roles: [] },
+  { name: "Settings", href: "/settings", icon: Settings, roles: ['admin'] },
 ]
 
 interface SidebarProps {

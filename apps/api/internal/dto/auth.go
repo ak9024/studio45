@@ -71,3 +71,12 @@ type UpdateUserRequest struct {
 	Phone   *string `json:"phone,omitempty" validate:"omitempty,phone"`
 	Company *string `json:"company,omitempty"`
 }
+
+type AdminRegisterUserRequest struct {
+	Email    string   `json:"email" validate:"required,email"`
+	Password string   `json:"password" validate:"required,min=6"`
+	Name     string   `json:"name" validate:"required,min=2"`
+	Phone    *string  `json:"phone,omitempty" validate:"omitempty,phone"`
+	Company  *string  `json:"company,omitempty"`
+	Roles    []string `json:"roles,omitempty" validate:"omitempty,min=1"`
+}

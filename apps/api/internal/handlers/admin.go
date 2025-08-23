@@ -1,9 +1,12 @@
 package handlers
 
 import (
+	"api/internal/auth"
+	"api/internal/database"
 	"api/internal/dto"
 	"api/internal/helpers"
 	"api/internal/middleware"
+	"api/internal/models"
 	"api/internal/pkg/phonenumbers"
 	"api/internal/services"
 	"errors"
@@ -242,5 +245,80 @@ func UpdateUser(c *fiber.Ctx) error {
 		Roles:     updatedUser.GetRoleNames(),
 		CreatedAt: updatedUser.CreatedAt.Format("2006-01-02T15:04:05Z"),
 		UpdatedAt: updatedUser.UpdatedAt.Format("2006-01-02T15:04:05Z"),
+	})
+}
+
+// CreateUser creates a new user (admin only)
+func CreateUser(c *fiber.Ctx) error {
+	var req dto.AdminRegisterUserRequest
+	if err := c.BodyParser(&req); err != nil {
+		return helpers.ValidationErrorResponse(c, "Invalid request body")
+	}
+
+	if err := validate.Struct(req); err != nil {
+		return helpers.ValidationErrorResponse(c, helpers.FormatValidationError(err))
+	}
+
+	hashedPassword, err := auth.HashPassword(req.Password)
+	if err != nil {
+		return helpers.InternalServerErrorResponse(c, "Failed to process password")
+	}
+
+	user := models.User{
+		Email:    helpers.NormalizeEmail(req.Email),
+		Password: hashedPassword,
+		Name:     helpers.TrimString(req.Name),
+	}
+
+	if req.Phone != nil && *req.Phone != "" {
+		normalizedPhone, err := phonenumbers.NormalizeNumber(*req.Phone, phonenumbers.DefaultPhoneRegion)
+		if err != nil {
+			return helpers.ValidationErrorResponse(c, "Invalid phone number format")
+		}
+		user.Phone = &normalizedPhone
+	}
+
+	if req.Company != nil && *req.Company != "" {
+		trimmedCompany := helpers.TrimString(*req.Company)
+		user.Company = &trimmedCompany
+	}
+
+	result := database.DB.Create(&user)
+	if result.Error != nil {
+		if helpers.IsDuplicateError(result.Error) {
+			return helpers.ConflictResponse(c, "Email already exists")
+		}
+		return helpers.InternalServerErrorResponse(c, "Failed to create user")
+	}
+
+	rbacService := services.NewRBACService()
+	currentUserID := middleware.GetUserID(c)
+
+	// Assign roles (default to "user" if no roles specified)
+	rolesToAssign := req.Roles
+	if len(rolesToAssign) == 0 {
+		rolesToAssign = []string{"user"}
+	}
+
+	err = rbacService.SetUserRoles(user.ID, rolesToAssign, &currentUserID)
+	if err != nil {
+		return helpers.InternalServerErrorResponse(c, "Failed to assign roles: "+err.Error())
+	}
+
+	// Get created user with roles
+	createdUser, err := rbacService.GetUserWithRoles(user.ID)
+	if err != nil {
+		return helpers.InternalServerErrorResponse(c, "Failed to fetch created user")
+	}
+
+	return helpers.SuccessResponse(c, fiber.StatusCreated, dto.UserManagementResponse{
+		ID:        createdUser.ID,
+		Email:     createdUser.Email,
+		Name:      createdUser.Name,
+		Phone:     createdUser.Phone,
+		Company:   createdUser.Company,
+		Roles:     createdUser.GetRoleNames(),
+		CreatedAt: createdUser.CreatedAt.Format("2006-01-02T15:04:05Z"),
+		UpdatedAt: createdUser.UpdatedAt.Format("2006-01-02T15:04:05Z"),
 	})
 }

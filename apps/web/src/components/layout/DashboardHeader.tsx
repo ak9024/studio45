@@ -11,10 +11,12 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Bell, Search, LogOut, User, Settings } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
+import { useIsAdmin } from "@/hooks/useHasRole"
 
 export function DashboardHeader() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const isAdmin = useIsAdmin()
 
   const handleLogout = () => {
     logout()
@@ -76,10 +78,12 @@ export function DashboardHeader() {
               <User className="mr-2 h-4 w-4" />
               Profile
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate('/settings')}>
-              <Settings className="mr-2 h-4 w-4" />
-              Settings
-            </DropdownMenuItem>
+            {isAdmin && (
+              <DropdownMenuItem onClick={() => navigate('/settings')}>
+                <Settings className="mr-2 h-4 w-4" />
+                Settings
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
