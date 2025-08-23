@@ -6,6 +6,10 @@ import { RegisterPage } from "./pages/auth/RegisterPage"
 import { AuthPage } from "./pages/auth/AuthPage"
 import { ForgotPasswordPage } from "./pages/auth/ForgotPasswordPage"
 import { ResetPasswordPage } from "./pages/auth/ResetPasswordPage"
+import { DashboardPage } from "./pages/dashboard/DashboardPage"
+import { AnalyticsPage } from "./pages/analytics/AnalyticsPage"
+import { UsersPage } from "./pages/users/UsersPage"
+import { SettingsPage } from "./pages/settings/SettingsPage"
 
 function HomePage() {
   const appTitle = import.meta.env.VITE_APP_TITLE || 'My App'
@@ -19,6 +23,9 @@ function HomePage() {
               <h1 className="text-xl font-semibold">{appTitle}</h1>
             </div>
             <div className="flex items-center space-x-4">
+              <Link to="/dashboard">
+                <Button variant="ghost">Dashboard</Button>
+              </Link>
               <Link to="/login">
                 <Button variant="ghost">Sign In</Button>
               </Link>
@@ -55,6 +62,10 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
+      <Route path="/dashboard" element={<DashboardPage />} />
+      <Route path="/analytics" element={<AnalyticsPage />} />
+      <Route path="/users" element={<UsersPage />} />
+      <Route path="/settings" element={<SettingsPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/auth" element={<AuthPage />} />
