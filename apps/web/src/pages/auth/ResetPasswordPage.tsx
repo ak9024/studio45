@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { resetPasswordSchema, type ResetPasswordFormData } from "@/lib/schemas/auth"
+import { authService } from "@/services/api"
 
 export function ResetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -16,6 +17,7 @@ export function ResetPasswordPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [tokenError, setTokenError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
   
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -39,7 +41,6 @@ export function ResetPasswordPage() {
       return
     }
     
-    // TODO: Validate token with backend
     console.log("Reset token:", token)
   }, [token])
 
@@ -50,18 +51,34 @@ export function ResetPasswordPage() {
     }
 
     setIsLoading(true)
+    setError(null)
     try {
-      console.log("Reset password data:", { ...data, token })
-      // TODO: Implement actual password reset logic here
-      await new Promise(resolve => setTimeout(resolve, 2000)) // Simulate API call
-      setIsSuccess(true)
+      const response = await authService.resetPassword({
+        token,
+        password: data.password
+      })
       
-      // Redirect to login after success
-      setTimeout(() => {
-        navigate("/login", { replace: true })
-      }, 3000)
-    } catch (error) {
+      if (response.success) {
+        setIsSuccess(true)
+        // Redirect to login after success
+        setTimeout(() => {
+          navigate("/login", { replace: true })
+        }, 3000)
+      } else {
+        setError(response.message || "Failed to reset password")
+      }
+    } catch (error: any) {
       console.error("Reset password error:", error)
+      const errorMessage = error.response?.data?.message || error.message || "Failed to reset password"
+      
+      // Handle specific error cases
+      if (errorMessage.toLowerCase().includes("token") && errorMessage.toLowerCase().includes("expired")) {
+        setTokenError("Your reset link has expired. Please request a new password reset link.")
+      } else if (errorMessage.toLowerCase().includes("token") && errorMessage.toLowerCase().includes("invalid")) {
+        setTokenError("Invalid reset link. Please request a new password reset link.")
+      } else {
+        setError(errorMessage)
+      }
     } finally {
       setIsLoading(false)
     }
@@ -166,6 +183,11 @@ export function ResetPasswordPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded mb-4">
+              {error}
+            </div>
+          )}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="password">New Password</Label>

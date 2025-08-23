@@ -13,6 +13,7 @@ import { DashboardPage } from "./pages/dashboard/DashboardPage"
 import { AnalyticsPage } from "./pages/analytics/AnalyticsPage"
 import { UsersPage } from "./pages/users/UsersPage"
 import { SettingsPage } from "./pages/settings/SettingsPage"
+import { ProfilePage } from "./pages/profile/ProfilePage"
 
 function HomePage() {
   const appTitle = import.meta.env.VITE_APP_TITLE || 'My App'
@@ -99,6 +100,14 @@ function AppContent() {
         element={
           <ProtectedRoute>
             <SettingsPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/profile" 
+        element={
+          <ProtectedRoute>
+            <ProfilePage />
           </ProtectedRoute>
         } 
       />
