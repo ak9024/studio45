@@ -31,10 +31,12 @@ export function UsersPage() {
     try {
       setLoading(true)
       const response = await adminService.getUsers()
-      if (response.success && response.data) {
-        setUsers(response.data.data || [])
+      if (response) {
+        // Handle the actual API format: {total: 2, users: [...]}
+        const users = (response as any)?.users || (response.data as any)?.users || response.data?.data || []
+        setUsers(users)
       } else {
-        toast.error(response.message || 'Failed to load users')
+        toast.error('Failed to load users - no response')
       }
     } catch (error: any) {
       console.error('Error loading users:', error)
