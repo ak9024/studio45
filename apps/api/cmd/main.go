@@ -80,6 +80,7 @@ func init() {
 	rootCmd.AddCommand(serverCmd)
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(migrateCmd)
+	rootCmd.AddCommand(promoteCmd)
 
 	// Add flags
 	serverCmd.Flags().IntVarP(&port, "port", "p", envPort, "Port to run the server on")
