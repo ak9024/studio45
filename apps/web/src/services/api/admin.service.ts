@@ -2,6 +2,7 @@ import { apiClient } from './client'
 import {
   type User,
   type UpdateUserRequest,
+  type CreateUserRequest,
   type UpdateUserRolesRequest,
   type Role,
   type Permission,
@@ -17,6 +18,10 @@ export class AdminService {
 
   async getUser(id: string): Promise<ApiResponse<User>> {
     return apiClient.get<User>(`/api/v1/admin/users/${id}`)
+  }
+
+  async createUser(data: CreateUserRequest): Promise<ApiResponse<User>> {
+    return apiClient.post<User>('/api/v1/admin/users', data)
   }
 
   async updateUser(id: string, data: UpdateUserRequest): Promise<ApiResponse<User>> {

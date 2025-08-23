@@ -49,6 +49,15 @@ export interface UpdateUserRequest {
   company?: string
 }
 
+export interface CreateUserRequest {
+  name: string
+  email: string
+  password: string
+  phone?: string
+  company?: string
+  roles?: string[]
+}
+
 export interface UpdateUserRolesRequest {
   roles: string[]
 }

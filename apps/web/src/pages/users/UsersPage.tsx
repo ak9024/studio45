@@ -17,11 +17,14 @@ import { MoreHorizontal, Search, Plus, Edit, Trash2 } from "lucide-react"
 import { type User } from "@/types/api.types"
 import { adminService } from "@/services/api"
 import { toast } from "sonner"
+import { UserFormDialog } from "@/components/users/UserFormDialog"
 
 export function UsersPage() {
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
 
   useEffect(() => {
     loadUsers()
@@ -63,6 +66,25 @@ export function UsersPage() {
     }
   }
 
+  const handleAddUser = () => {
+    setSelectedUser(null)
+    setDialogOpen(true)
+  }
+
+  const handleEditUser = (user: User) => {
+    setSelectedUser(user)
+    setDialogOpen(true)
+  }
+
+  const handleDialogClose = () => {
+    setDialogOpen(false)
+    setSelectedUser(null)
+  }
+
+  const handleDialogSuccess = () => {
+    loadUsers()
+  }
+
   const filteredUsers = users.filter(user => 
     user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
@@ -98,7 +120,7 @@ export function UsersPage() {
               Manage and view all users in your system.
             </p>
           </div>
-          <Button>
+          <Button onClick={handleAddUser}>
             <Plus className="mr-2 h-4 w-4" />
             Add User
           </Button>
@@ -163,7 +185,7 @@ export function UsersPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleEditUser(user)}>
                             <Edit className="mr-2 h-4 w-4" />
                             Edit
                           </DropdownMenuItem>
@@ -184,6 +206,13 @@ export function UsersPage() {
             </div>
           </CardContent>
         </Card>
+
+        <UserFormDialog
+          open={dialogOpen}
+          onOpenChange={handleDialogClose}
+          user={selectedUser}
+          onSuccess={handleDialogSuccess}
+        />
       </div>
     </DashboardLayout>
   )
