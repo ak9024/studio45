@@ -35,11 +35,16 @@ class ApiClient {
         return response
       },
       (error: AxiosError<ApiResponse<any>>) => {
-        // Handle 401 - Unauthorized
+        // Handle 401 - Unauthorized (but not for auth endpoints)
         if (error.response?.status === 401) {
-          localStorage.removeItem('auth_token')
-          localStorage.removeItem('auth_user')
-          window.location.href = '/login'
+          // Don't redirect if this is an auth endpoint (login, register, etc.)
+          const isAuthEndpoint = error.config?.url?.includes('/api/v1/auth/')
+          
+          if (!isAuthEndpoint) {
+            localStorage.removeItem('auth_token')
+            localStorage.removeItem('auth_user')
+            window.location.href = '/login'
+          }
         }
 
         // Handle other common errors

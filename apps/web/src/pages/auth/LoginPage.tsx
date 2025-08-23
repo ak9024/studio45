@@ -10,12 +10,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { loginSchema, type LoginFormData } from "@/lib/schemas/auth"
 import { useAuth } from "@/hooks/useAuth"
-import { useToast } from "@/hooks/useToast"
+import { toast } from "sonner"
 
 export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const { login, isLoading } = useAuth()
-  const { error: showError, success } = useToast()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -32,11 +31,11 @@ export function LoginPage() {
   const onSubmit = async (data: LoginFormData) => {
     try {
       await login(data.email, data.password)
-      success("Welcome back! You've been successfully logged in.")
+      toast.success("Welcome back! You've been successfully logged in.")
       navigate(from, { replace: true })
     } catch (error: any) {
       console.error("Login error:", error)
-      showError(error.response?.data?.message || error.message || "Login failed. Please try again.")
+      toast.error(error.response?.data?.error || error.response?.data?.message || error.message || "Login failed. Please try again.")
     }
   }
 

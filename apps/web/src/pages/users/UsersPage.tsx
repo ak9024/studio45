@@ -16,13 +16,12 @@ import {
 import { MoreHorizontal, Search, Plus, Edit, Trash2 } from "lucide-react"
 import { type User } from "@/types/api.types"
 import { adminService } from "@/services/api"
-import { useToast } from "@/hooks/useToast"
+import { toast } from "sonner"
 
 export function UsersPage() {
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const { error: showError, success } = useToast()
 
   useEffect(() => {
     loadUsers()
@@ -35,11 +34,11 @@ export function UsersPage() {
       if (response.success && response.data) {
         setUsers(response.data.data || [])
       } else {
-        showError(response.message || 'Failed to load users')
+        toast.error(response.message || 'Failed to load users')
       }
     } catch (error: any) {
       console.error('Error loading users:', error)
-      showError(error.response?.data?.message || 'Failed to load users')
+      toast.error(error.response?.data?.message || 'Failed to load users')
     } finally {
       setLoading(false)
     }
@@ -52,13 +51,13 @@ export function UsersPage() {
       const response = await adminService.deleteUser(userId)
       if (response.success) {
         setUsers(users.filter(user => user.id !== userId))
-        success('User deleted successfully')
+        toast.success('User deleted successfully')
       } else {
-        showError(response.message || 'Failed to delete user')
+        toast.error(response.message || 'Failed to delete user')
       }
     } catch (error: any) {
       console.error('Error deleting user:', error)
-      showError(error.response?.data?.message || 'Failed to delete user')
+      toast.error(error.response?.data?.message || 'Failed to delete user')
     }
   }
 

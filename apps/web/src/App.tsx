@@ -3,10 +3,9 @@ import { Routes, Route, Link, Navigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { AuthProvider, useAuth } from "@/contexts/AuthContext"
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute"
-import { ToastProvider } from "@/hooks/useToast"
+import { Toaster } from "@/components/ui/sonner"
 import { LoginPage } from "./pages/auth/LoginPage"
 import { RegisterPage } from "./pages/auth/RegisterPage"
-import { AuthPage } from "./pages/auth/AuthPage"
 import { ForgotPasswordPage } from "./pages/auth/ForgotPasswordPage"
 import { ResetPasswordPage } from "./pages/auth/ResetPasswordPage"
 import { DashboardPage } from "./pages/dashboard/DashboardPage"
@@ -56,7 +55,7 @@ function HomePage() {
               Get started by creating an account or signing in to your existing account.
             </p>
             <div className="space-x-4">
-              <Link to="/auth">
+              <Link to="/login">
                 <Button size="lg">Get Started</Button>
               </Link>
             </div>
@@ -113,7 +112,6 @@ function AppContent() {
       />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
-      <Route path="/auth" element={<AuthPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
@@ -123,11 +121,10 @@ function AppContent() {
 
 function App() {
   return (
-    <ToastProvider>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
-    </ToastProvider>
+    <AuthProvider>
+      <AppContent />
+      <Toaster />
+    </AuthProvider>
   )
 }
 

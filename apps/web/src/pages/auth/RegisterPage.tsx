@@ -33,7 +33,7 @@ export function RegisterPage() {
       navigate('/dashboard', { replace: true })
     } catch (error: any) {
       console.error("Registration error:", error)
-      setError(error.response?.data?.message || error.message || "Registration failed. Please try again.")
+      setError(error.response?.data?.error || error.response?.data?.message || error.message || "Registration failed. Please try again.")
     }
   }
 

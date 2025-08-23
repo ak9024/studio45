@@ -33,11 +33,11 @@ export function ForgotPasswordPage() {
       if (response.success) {
         setIsSubmitted(true)
       } else {
-        setError(response.message || "Failed to send reset email")
+        setError(response.error || response.message || "Failed to send reset email")
       }
     } catch (error: any) {
       console.error("Forgot password error:", error)
-      setError(error.response?.data?.message || error.message || "Failed to send reset email")
+      setError(error.response?.data?.error || error.response?.data?.message || error.message || "Failed to send reset email")
     } finally {
       setIsLoading(false)
     }

@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { updateProfileSchema, type UpdateProfileFormData } from "@/lib/schemas/profile"
 import { useAuth } from "@/hooks/useAuth"
-import { useToast } from "@/hooks/useToast"
+import { toast } from "sonner"
 import { authService } from "@/services/api"
 
 export function ProfilePage() {
@@ -21,7 +21,6 @@ export function ProfilePage() {
   const [isRefreshing, setIsRefreshing] = useState(true)
   const [profileLoaded, setProfileLoaded] = useState(false)
   const { user, updateUser } = useAuth()
-  const { success, error: showError } = useToast()
 
   const {
     register,
@@ -71,11 +70,11 @@ export function ProfilePage() {
           })
           setProfileLoaded(true)
         } else {
-          showError("Failed to load profile data")
+          toast.error("Failed to load profile data")
         }
       } catch (error) {
         console.error('Error loading profile:', error)
-        showError("Failed to load profile data")
+        toast.error("Failed to load profile data")
       } finally {
         setIsRefreshing(false)
       }
@@ -104,14 +103,14 @@ export function ProfilePage() {
         }
         
         setIsEditing(false)
-        success("Profile updated successfully")
+        toast.success("Profile updated successfully")
       } else {
         // Only show error if response explicitly indicates failure
-        showError(response.message || "Failed to update profile")
+        toast.error(response.message || "Failed to update profile")
       }
     } catch (error: any) {
       console.error("Profile update error:", error)
-      showError(error.response?.data?.message || error.message || "Failed to update profile")
+      toast.error(error.response?.data?.message || error.message || "Failed to update profile")
     } finally {
       setIsLoading(false)
     }

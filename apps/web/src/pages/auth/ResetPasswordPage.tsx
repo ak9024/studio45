@@ -65,11 +65,11 @@ export function ResetPasswordPage() {
           navigate("/login", { replace: true })
         }, 3000)
       } else {
-        setError(response.message || "Failed to reset password")
+        setError(response.error || response.message || "Failed to reset password")
       }
     } catch (error: any) {
       console.error("Reset password error:", error)
-      const errorMessage = error.response?.data?.message || error.message || "Failed to reset password"
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || "Failed to reset password"
       
       // Handle specific error cases
       if (errorMessage.toLowerCase().includes("token") && errorMessage.toLowerCase().includes("expired")) {

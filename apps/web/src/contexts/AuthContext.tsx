@@ -96,10 +96,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(newUser)
       } else {
         console.error('Login failed - Invalid response structure:', response) // Debug logging
-        throw new Error(response.message || response.error || 'Login failed - Invalid response format')
+        throw new Error(response.error || response.message || 'Login failed - Invalid response format')
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error)
+      // If it's an axios error with a response, extract the error message
+      if (error.response?.data?.error) {
+        throw new Error(error.response.data.error)
+      } else if (error.response?.data?.message) {
+        throw new Error(error.response.data.message)
+      }
       throw error
     } finally {
       setIsLoading(false)
@@ -115,10 +121,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // After registration, automatically log in
         await login(email, password)
       } else {
-        throw new Error(response.message || 'Registration failed')
+        throw new Error(response.error || response.message || 'Registration failed')
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Registration error:', error)
+      // If it's an axios error with a response, extract the error message
+      if (error.response?.data?.error) {
+        throw new Error(error.response.data.error)
+      } else if (error.response?.data?.message) {
+        throw new Error(error.response.data.message)
+      }
       throw error
     } finally {
       setIsLoading(false)
