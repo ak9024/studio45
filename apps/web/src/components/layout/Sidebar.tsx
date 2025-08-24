@@ -38,7 +38,7 @@ export function Sidebar({ className }: SidebarProps) {
   return (
     <div
       className={cn(
-        "relative flex h-screen flex-col border-r bg-background transition-all duration-300",
+        "sticky top-0 flex h-screen flex-col border-r bg-background transition-all duration-300",
         collapsed ? "w-16" : "w-64",
         className
       )}
