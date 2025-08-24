@@ -36,7 +36,7 @@ func (s *RBACService) GetUserRoles(userID string) ([]string, error) {
 		Joins("JOIN user_roles ON roles.id = user_roles.role_id").
 		Where("user_roles.user_id = ?", userID).
 		Find(&roles).Error
-	
+
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +45,7 @@ func (s *RBACService) GetUserRoles(userID string) ([]string, error) {
 	for i, role := range roles {
 		roleNames[i] = role.Name
 	}
-	
+
 	return roleNames, nil
 }
 
@@ -93,7 +93,7 @@ func (s *RBACService) RemoveRoleFromUser(userID, roleName string) error {
 	if result.Error != nil {
 		return result.Error
 	}
-	
+
 	if result.RowsAffected == 0 {
 		return errors.New("user does not have this role")
 	}
@@ -148,7 +148,7 @@ func (s *RBACService) HasPermission(userID, permissionName string) (bool, error)
 func (s *RBACService) GetUserPermissions(userID string) ([]models.Permission, error) {
 	var permissions []models.Permission
 	err := s.db.Table("permissions").
-		Select("DISTINCT permissions.*").
+		Select("DISTINCT permissions.id, permissions.name, permissions.resource, permissions.action, permissions.description, permissions.created_at, permissions.updated_at").
 		Joins("JOIN role_permissions ON permissions.id = role_permissions.permission_id").
 		Joins("JOIN user_roles ON role_permissions.role_id = user_roles.role_id").
 		Where("user_roles.user_id = ?", userID).
@@ -160,7 +160,7 @@ func (s *RBACService) GetUserPermissions(userID string) ([]models.Permission, er
 // GetAllRoles returns all available roles
 func (s *RBACService) GetAllRoles() ([]models.Role, error) {
 	var roles []models.Role
-	err := s.db.Find(&roles).Error
+	err := s.db.Select("id, name, description, created_at, updated_at").Find(&roles).Error
 	return roles, err
 }
 
@@ -177,7 +177,7 @@ func (s *RBACService) GetRoleByName(name string) (*models.Role, error) {
 // GetAllUsersWithRoles returns all users with their roles loaded
 func (s *RBACService) GetAllUsersWithRoles() ([]models.User, error) {
 	var users []models.User
-	err := s.db.Preload("Roles").Find(&users).Error
+	err := s.db.Select("id, email, name, phone, company, created_at, updated_at").Preload("Roles").Find(&users).Error
 	return users, err
 }
 
@@ -205,7 +205,7 @@ func (s *RBACService) DeleteUser(userID string) error {
 // GetAllPermissions returns all available permissions
 func (s *RBACService) GetAllPermissions() ([]models.Permission, error) {
 	var permissions []models.Permission
-	err := s.db.Find(&permissions).Error
+	err := s.db.Select("id, name, resource, action, description, created_at, updated_at").Find(&permissions).Error
 	return permissions, err
 }
 
@@ -238,7 +238,7 @@ func (s *RBACService) CreatePermission(name, resource, action string, descriptio
 // UpdatePermission updates a permission
 func (s *RBACService) UpdatePermission(id string, updates map[string]interface{}) (*models.Permission, error) {
 	var permission models.Permission
-	
+
 	// First check if permission exists
 	if err := s.db.Where("id = ?", id).First(&permission).Error; err != nil {
 		return nil, err
@@ -293,7 +293,7 @@ func (s *RBACService) CreateRole(name string, description *string) (*models.Role
 // UpdateRole updates a role
 func (s *RBACService) UpdateRole(id string, updates map[string]interface{}) (*models.Role, error) {
 	var role models.Role
-	
+
 	// First check if role exists
 	if err := s.db.Where("id = ?", id).First(&role).Error; err != nil {
 		return nil, err
@@ -318,12 +318,12 @@ func (s *RBACService) DeleteRole(id string) error {
 	if err := s.db.Where("id = ?", id).First(&role).Error; err != nil {
 		return err
 	}
-	
+
 	// Prevent deletion of critical system roles
 	if role.Name == "admin" || role.Name == "user" {
 		return errors.New("cannot delete system role: " + role.Name)
 	}
-	
+
 	return s.db.Delete(&role).Error
 }
 
@@ -399,7 +399,7 @@ func (s *RBACService) RemovePermissionFromRole(roleID, permissionID string) erro
 	if result.Error != nil {
 		return result.Error
 	}
-	
+
 	if result.RowsAffected == 0 {
 		return errors.New("permission not assigned to role")
 	}
