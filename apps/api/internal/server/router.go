@@ -120,4 +120,14 @@ func setupRoutes(app *fiber.App, config RouterConfig) {
 	
 	admin.Get("/users/:id/permissions", handlers.GetUserPermissions)
 	admin.Get("/users/:id/permissions/:permission", handlers.CheckUserPermission)
+	
+	// Email template management
+	admin.Get("/email-templates", handlers.ListEmailTemplates)
+	admin.Post("/email-templates", handlers.CreateEmailTemplate)
+	admin.Get("/email-templates/:id", handlers.GetEmailTemplate)
+	admin.Put("/email-templates/:id", handlers.UpdateEmailTemplate)
+	admin.Delete("/email-templates/:id", handlers.DeleteEmailTemplate)
+	admin.Get("/email-templates/:id/variables", handlers.GetTemplateVariables)
+	admin.Post("/email-templates/:id/preview", handlers.PreviewEmailTemplate)
+	admin.Post("/email-templates/:id/test", handlers.TestEmailTemplate)
 }

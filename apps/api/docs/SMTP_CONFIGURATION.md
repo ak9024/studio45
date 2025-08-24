@@ -63,7 +63,8 @@ SMTP_PASSWORD=your-ses-secret-access-key
 - **Retry Logic**: 3 automatic retries with exponential backoff
 - **HTML & Text**: Sends both HTML and plain text versions
 - **Security**: Connection testing on startup
-- **Professional Templates**: Responsive HTML email templates
+- **Configurable Templates**: Database-driven email templates with API management (see [EMAIL_TEMPLATES.md](./EMAIL_TEMPLATES.md))
+- **Template Fallback**: Automatic fallback to hardcoded templates if database templates are unavailable
 
 ## Testing
 
@@ -79,3 +80,15 @@ SMTP_PASSWORD=your-ses-secret-access-key
 - **Authentication failed**: Ensure 2FA is enabled and using app-specific passwords
 
 The service will automatically log detailed error messages and fall back to console mode if SMTP fails.
+
+## Email Template Management
+
+Email templates are now configurable through a REST API. See [EMAIL_TEMPLATES.md](./EMAIL_TEMPLATES.md) for complete documentation on:
+
+- Managing email templates via API
+- Customizing email content and styling
+- Template variable system
+- Preview and testing functionality
+- Backward compatibility with existing templates
+
+The email service will automatically use database templates when available and fall back to the original hardcoded templates if the database is unavailable, ensuring reliable email delivery in all scenarios.

@@ -67,20 +67,38 @@ func NewEmailService() EmailService {
 func (c *ConsoleEmailService) SendPasswordReset(to, token string) error {
 	resetURL := fmt.Sprintf("%s/reset-password?token=%s",
 		getBaseURL(), token)
+	companyName := "Studio45" // Default company name for console service
+
+	// Try to get template from database first
+	templateService := NewEmailTemplateService()
+	variables := map[string]string{
+		"ResetURL":    resetURL,
+		"CompanyName": companyName,
+	}
+
+	rendered, err := templateService.RenderTemplate("password_reset", variables)
+	var subject, textContent string
+
+	if err != nil {
+		// Fallback to hardcoded display if database template is not available
+		log.Printf("Failed to load email template from database, using fallback: %v", err)
+		subject = "Reset Your Password"
+		textContent = fmt.Sprintf("Click the link below to reset your password:\n%s\n\nThis link expires in 15 minutes.", resetURL)
+	} else {
+		subject = rendered.Subject
+		textContent = rendered.TextContent
+	}
 
 	log.Printf("\n"+
 		"========================================\n"+
 		"PASSWORD RESET EMAIL\n"+
 		"========================================\n"+
 		"To: %s\n"+
-		"Subject: Reset Your Password\n"+
+		"Subject: %s\n"+
 		"\n"+
-		"Click the link below to reset your password:\n"+
 		"%s\n"+
-		"\n"+
-		"This link expires in 15 minutes.\n"+
 		"========================================\n",
-		to, resetURL)
+		to, subject, textContent)
 
 	return nil
 }
@@ -173,16 +191,38 @@ func (s *SMTPEmailService) SendPasswordReset(to, token string) error {
 	resetURL := fmt.Sprintf("%s/reset-password?token=%s", getBaseURL(), token)
 	companyName := s.config.FromName
 
+	// Try to get template from database first
+	templateService := NewEmailTemplateService()
+	variables := map[string]string{
+		"ResetURL":    resetURL,
+		"CompanyName": companyName,
+	}
+
+	rendered, err := templateService.RenderTemplate("password_reset", variables)
+	var subject, htmlContent, textContent string
+
+	if err != nil {
+		// Fallback to hardcoded templates if database template is not available
+		log.Printf("Failed to load email template from database, using fallback: %v", err)
+		subject = "Reset Your Password"
+		htmlContent = getPasswordResetHTMLTemplate(resetURL, companyName)
+		textContent = getPasswordResetTextTemplate(resetURL, companyName)
+	} else {
+		subject = rendered.Subject
+		htmlContent = rendered.HTMLContent
+		textContent = rendered.TextContent
+	}
+
 	m := gomail.NewMessage()
 	m.SetHeader("From", m.FormatAddress(s.config.FromEmail, s.config.FromName))
 	m.SetHeader("To", to)
-	m.SetHeader("Subject", "Reset Your Password")
+	m.SetHeader("Subject", subject)
 
 	// Set plain text body
-	m.SetBody("text/plain", getPasswordResetTextTemplate(resetURL, companyName))
+	m.SetBody("text/plain", textContent)
 
 	// Set HTML body
-	m.AddAlternative("text/html", getPasswordResetHTMLTemplate(resetURL, companyName))
+	m.AddAlternative("text/html", htmlContent)
 
 	// Retry logic with exponential backoff
 	maxRetries := 3
