@@ -4,23 +4,27 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Shield, Plus, RotateCcw, Database, Mail } from "lucide-react"
+import { Shield, Plus, RotateCcw, Database, Mail, Grid, BarChart3, Network } from "lucide-react"
+import { ReactFlowProvider } from 'reactflow'
 import { useAuth } from "@/hooks/useAuth"
 import { type Role, type Permission, type EmailTemplate } from "@/types/api.types"
 import { adminService } from "@/services/api"
 import { toast } from "sonner"
 import { RolesDataTable } from "@/components/settings/RolesDataTable"
 import { RoleFormDialog } from "@/components/settings/RoleFormDialog"
-import { PermissionsDataTable } from "@/components/settings/PermissionsDataTable"
+import { PermissionsDataTable as PermissionsDataTableEnhanced } from "@/components/settings/PermissionsDataTableEnhanced"
 import { PermissionFormDialog } from "@/components/settings/PermissionFormDialog"
-import { RolePermissionsDialog } from "@/components/settings/RolePermissionsDialog"
+import { RolePermissionsDialog as RolePermissionsDialogEnhanced } from "@/components/settings/RolePermissionsDialogEnhanced"
+import { RolePermissionMatrix } from "@/components/settings/RolePermissionMatrix"
+import { RoleStatsCard } from "@/components/settings/RoleStatsCard"
 import { EmailTemplatesDataTable } from "@/components/settings/EmailTemplatesDataTable"
 import { EmailTemplateFormDialog } from "@/components/settings/EmailTemplateFormDialog"
 import { EmailTemplatePreviewDialog } from "@/components/settings/EmailTemplatePreviewDialog"
 import { EmailTemplateTestDialog } from "@/components/settings/EmailTemplateTestDialog"
 import { TemplateVariablesInfo } from "@/components/settings/TemplateVariablesInfo"
+import { RBACInteractiveDiagram } from "@/components/settings/RBACInteractiveDiagram"
 
-export function SettingsPage() {
+export function SettingsPageEnhanced() {
   useAuth()
   
   // Roles state
@@ -144,6 +148,12 @@ export function SettingsPage() {
     }
   }
 
+  const refreshRolesAndPermissions = async () => {
+    await Promise.all([
+      loadRoles(),
+      loadPermissions()
+    ])
+  }
 
   // Role handlers
   const handleAddRole = () => {
@@ -299,6 +309,46 @@ export function SettingsPage() {
     loadEmailTemplates()
   }
 
+  // Enhanced handlers for new functionality
+  const handleBulkDeleteRoles = async (roleIds: string[]) => {
+    try {
+      await Promise.all(roleIds.map(id => adminService.deleteRole(id)))
+      setRoles(roles.filter(role => !roleIds.includes(role.id)))
+      toast.success(`Deleted ${roleIds.length} roles successfully`)
+    } catch (error) {
+      console.error('Error deleting roles:', error)
+      toast.error('Failed to delete some roles')
+    }
+  }
+
+  const handleBulkDeletePermissions = async (permissionIds: string[]) => {
+    try {
+      await Promise.all(permissionIds.map(id => adminService.deletePermission(id)))
+      setPermissions(permissions.filter(permission => !permissionIds.includes(permission.id)))
+      toast.success(`Deleted ${permissionIds.length} permissions successfully`)
+    } catch (error) {
+      console.error('Error deleting permissions:', error)
+      toast.error('Failed to delete some permissions')
+    }
+  }
+
+  const handleDuplicateRole = async (role: Role) => {
+    try {
+      const newRoleData = {
+        name: `${role.name} (Copy)`,
+        description: `${role.description} (Copy)`
+      }
+      const response = await adminService.createRole(newRoleData)
+      if (response.success || response) {
+        await loadRoles()
+        toast.success('Role duplicated successfully')
+      }
+    } catch (error) {
+      console.error('Error duplicating role:', error)
+      toast.error('Failed to duplicate role')
+    }
+  }
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -306,7 +356,7 @@ export function SettingsPage() {
           <div>
             <h2 className="text-3xl font-bold tracking-tight">Admin Settings</h2>
             <p className="text-muted-foreground">
-              Configure system-wide settings and manage application preferences.
+              Configure system-wide settings and manage application preferences with enhanced role and permission management.
             </p>
           </div>
           <Badge variant="secondary" className="bg-red-100 text-red-800">
@@ -315,8 +365,20 @@ export function SettingsPage() {
           </Badge>
         </div>
 
-        <Tabs defaultValue="security" className="space-y-4">
+        <Tabs defaultValue="overview" className="space-y-4">
           <TabsList>
+            <TabsTrigger value="overview">
+              <BarChart3 className="mr-2 h-4 w-4" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="rbac">
+              <Network className="mr-2 h-4 w-4" />
+              RBAC Diagram
+            </TabsTrigger>
+            <TabsTrigger value="matrix">
+              <Grid className="mr-2 h-4 w-4" />
+              Role Matrix
+            </TabsTrigger>
             <TabsTrigger value="security">
               <Shield className="mr-2 h-4 w-4" />
               Security
@@ -327,6 +389,48 @@ export function SettingsPage() {
             </TabsTrigger>
           </TabsList>
 
+          <TabsContent value="overview" className="space-y-6">
+            {/* Statistics Overview */}
+            <RoleStatsCard
+              roles={roles}
+              permissions={permissions}
+              loading={rolesLoading || permissionsLoading}
+            />
+          </TabsContent>
+
+          <TabsContent value="rbac" className="space-y-6">
+            {/* Interactive RBAC Diagram */}
+            <ReactFlowProvider>
+              <RBACInteractiveDiagram
+                onNodeClick={(nodeId, nodeType) => {
+                  console.log('Node clicked:', nodeId, nodeType)
+                  // Could open edit dialogs based on node type
+                  if (nodeType === 'role') {
+                    const roleId = nodeId.replace('role-', '')
+                    const role = roles.find(r => r.id === roleId)
+                    if (role) {
+                      setSelectedRole(role)
+                      setRolePermissionsDialogOpen(true)
+                    }
+                  }
+                }}
+                onExport={() => {
+                  // Custom export logic could go here
+                  toast.success('RBAC diagram export functionality ready')
+                }}
+              />
+            </ReactFlowProvider>
+          </TabsContent>
+
+          <TabsContent value="matrix" className="space-y-6">
+            {/* Role-Permission Matrix */}
+            <RolePermissionMatrix
+              roles={roles}
+              permissions={permissions}
+              loading={rolesLoading || permissionsLoading}
+              onRefresh={refreshRolesAndPermissions}
+            />
+          </TabsContent>
 
           <TabsContent value="security" className="space-y-6">
             {/* Roles Management */}
@@ -339,7 +443,7 @@ export function SettingsPage() {
                       Roles Management
                     </CardTitle>
                     <CardDescription>
-                      Create and manage user roles in the system
+                      Create and manage user roles in the system with bulk operations
                     </CardDescription>
                   </div>
                   <div className="flex gap-2">
@@ -366,6 +470,8 @@ export function SettingsPage() {
                   onEditRole={handleEditRole}
                   onDeleteRole={handleDeleteRole}
                   onManagePermissions={handleManagePermissions}
+                  onDuplicateRole={handleDuplicateRole}
+                  onBulkDelete={handleBulkDeleteRoles}
                 />
               </CardContent>
             </Card>
@@ -380,7 +486,7 @@ export function SettingsPage() {
                       Permissions Management
                     </CardTitle>
                     <CardDescription>
-                      Create and manage system permissions
+                      Create and manage system permissions with role usage tracking
                     </CardDescription>
                   </div>
                   <div className="flex gap-2">
@@ -401,11 +507,12 @@ export function SettingsPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <PermissionsDataTable
+                <PermissionsDataTableEnhanced
                   permissions={permissions}
                   loading={permissionsLoading}
                   onEditPermission={handleEditPermission}
                   onDeletePermission={handleDeletePermission}
+                  onBulkDelete={handleBulkDeletePermissions}
                 />
               </CardContent>
             </Card>
@@ -476,7 +583,7 @@ export function SettingsPage() {
           onSuccess={handlePermissionSuccess}
         />
 
-        <RolePermissionsDialog
+        <RolePermissionsDialogEnhanced
           open={rolePermissionsDialogOpen}
           onOpenChange={handleRolePermissionsDialogClose}
           role={selectedRole}

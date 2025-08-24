@@ -1,3 +1,6 @@
 export { RoleNode } from './RoleNode'
 export { PermissionNode } from './PermissionNode'
 export { UserNode } from './UserNode'
+export { InteractiveUserNode } from './InteractiveUserNode'
+export { InteractiveRoleNode } from './InteractiveRoleNode'
+export { InteractivePermissionNode } from './InteractivePermissionNode'

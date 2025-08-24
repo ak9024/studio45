@@ -120,6 +120,123 @@ export interface AssignPermissionsRequest {
   permission_ids: string[]
 }
 
+// Enhanced types for role and permission management
+export interface RoleWithPermissionCount extends Role {
+  permissionCount: number
+  permissions: Permission[]
+}
+
+export interface PermissionWithRoleUsage extends Permission {
+  usedByRoles: Role[]
+  roleCount: number
+}
+
+export interface RolePermissionMatrix {
+  roleId: string
+  permissionId: string
+  hasPermission: boolean
+}
+
+export interface BulkOperationRequest {
+  ids: string[]
+}
+
+export interface BulkRoleDeleteRequest extends BulkOperationRequest {
+  roleIds: string[]
+}
+
+export interface BulkPermissionDeleteRequest extends BulkOperationRequest {
+  permissionIds: string[]
+}
+
+export interface BulkPermissionAssignRequest {
+  permissionIds: string[]
+  roleIds: string[]
+}
+
+export interface RoleStats {
+  totalRoles: number
+  totalPermissions: number
+  avgPermissionsPerRole: number
+  rolesWithoutPermissions: number
+  mostUsedPermissions: Permission[]
+  recentlyCreatedRoles: Role[]
+  permissionDistribution: Record<string, number>
+}
+
+export interface PermissionTemplate {
+  name: string
+  description: string
+  permissions: Permission[]
+}
+
+export interface RoleFilterOptions {
+  search?: string
+  sortField?: keyof Role | 'permissionCount'
+  sortDirection?: 'asc' | 'desc'
+  hasPermissions?: boolean
+}
+
+export interface PermissionFilterOptions {
+  search?: string
+  resource?: string
+  action?: string
+  sortField?: keyof Permission | 'roleCount'
+  sortDirection?: 'asc' | 'desc'
+  roleUsage?: 'all' | 'used' | 'unused'
+}
+
+// Enhanced role management types
+export interface DuplicateRoleRequest {
+  originalRoleId: string
+  newName: string
+  newDescription?: string
+  copyPermissions?: boolean
+}
+
+export interface RoleAnalytics {
+  roleId: string
+  roleName: string
+  userCount: number
+  permissionCount: number
+  lastUsed?: string
+  createdAt: string
+}
+
+export interface PermissionAnalytics {
+  permissionId: string
+  permissionName: string
+  resource: string
+  action: string
+  roleCount: number
+  userCount: number
+  createdAt: string
+}
+
+export interface SystemSecurityMetrics {
+  totalRoles: number
+  totalPermissions: number
+  totalUsers: number
+  adminRoleCount: number
+  unusedPermissions: number
+  rolesWithoutPermissions: number
+  permissionDistribution: Record<string, number>
+  recentActivity: {
+    rolesCreated: number
+    permissionsCreated: number
+    assignmentsChanged: number
+    lastWeek: boolean
+  }
+}
+
+export interface MatrixExportOptions {
+  format: 'csv' | 'xlsx' | 'json'
+  includeHeaders: boolean
+  includeStats: boolean
+  filterByResource?: string[]
+  filterByAction?: string[]
+}
+
 // Email Template Types
 export interface EmailTemplate {
   id: string
