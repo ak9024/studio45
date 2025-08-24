@@ -2,17 +2,18 @@
 
 A modern, secure API built with Go, Fiber, and PostgreSQL featuring role-based access control (RBAC) and comprehensive user management.
 
-## 🚀 Features
+## Features
 
 - **Authentication & Authorization**: JWT-based auth with role-based access control
 - **User Management**: Complete user lifecycle with profile management
-- **Role-Based Access Control**: Normalized RBAC system with audit trail
-- **Admin Panel**: Comprehensive user and role management
+- **Role-Based Access Control**: Normalized RBAC system with comprehensive CRUD operations
+- **Admin Panel**: Full-featured user, role, and permission management UI
+- **Permission Management**: Granular permission system with resource-action structure
 - **Password Reset**: Secure email-based password recovery
 - **Database Migrations**: Version-controlled schema management
 - **API Documentation**: Comprehensive endpoint documentation
 
-## 🏗️ Architecture
+## Architecture
 
 - **Framework**: Go with Fiber web framework
 - **Database**: PostgreSQL with GORM ORM
@@ -21,7 +22,7 @@ A modern, secure API built with Go, Fiber, and PostgreSQL featuring role-based a
 - **Migration**: Custom migration system
 - **Validation**: Request validation with go-playground/validator
 
-## 📋 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -60,7 +61,7 @@ A modern, secure API built with Go, Fiber, and PostgreSQL featuring role-based a
 
 The API will be available at `http://localhost:8080`
 
-## 🔧 Configuration
+## Configuration
 
 ### Environment Variables
 
@@ -102,13 +103,36 @@ The API will be available at `http://localhost:8080`
 
 ### Admin Endpoints
 
+#### User Management
 | Method | Endpoint | Description | Auth Required |
 |--------|----------|-------------|---------------|
 | `GET` | `/api/v1/admin/users` | List all users | Admin |
+| `POST` | `/api/v1/admin/users` | Create new user | Admin |
+| `PUT` | `/api/v1/admin/users/:id` | Update user | Admin |
 | `PUT` | `/api/v1/admin/users/:id/roles` | Update user roles | Admin |
 | `DELETE` | `/api/v1/admin/users/:id` | Delete user | Admin |
-| `GET` | `/api/v1/admin/roles` | List available roles | Admin |
 | `GET` | `/api/v1/admin/users/:id/permissions` | Get user permissions | Admin |
+| `GET` | `/api/v1/admin/users/:id/permissions/:permission` | Check user permission | Admin |
+
+#### Role Management  
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| `GET` | `/api/v1/admin/roles` | List all roles | Admin |
+| `POST` | `/api/v1/admin/roles` | Create new role | Admin |
+| `GET` | `/api/v1/admin/roles/:id` | Get role by ID with permissions | Admin |
+| `PUT` | `/api/v1/admin/roles/:id` | Update role | Admin |
+| `DELETE` | `/api/v1/admin/roles/:id` | Delete role | Admin |
+| `GET` | `/api/v1/admin/roles/:id/permissions` | Get role permissions | Admin |
+| `PUT` | `/api/v1/admin/roles/:id/permissions` | Update role permissions | Admin |
+
+#### Permission Management
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| `GET` | `/api/v1/admin/permissions` | List all permissions | Admin |
+| `POST` | `/api/v1/admin/permissions` | Create new permission | Admin |
+| `GET` | `/api/v1/admin/permissions/:id` | Get permission by ID | Admin |
+| `PUT` | `/api/v1/admin/permissions/:id` | Update permission | Admin |
+| `DELETE` | `/api/v1/admin/permissions/:id` | Delete permission | Admin |
 
 ### System Endpoints
 
@@ -116,7 +140,7 @@ The API will be available at `http://localhost:8080`
 |--------|----------|-------------|---------------|
 | `GET` | `/health` | Health check | No |
 
-## 🔐 Role-Based Access Control (RBAC)
+## Role-Based Access Control (RBAC)
 
 Studio45 implements a comprehensive RBAC system with the following features:
 
@@ -137,7 +161,7 @@ Studio45 implements a comprehensive RBAC system with the following features:
 
 ### Documentation
 
-📚 **[Complete RBAC Documentation](docs/RBAC_SYSTEM.md)**
+**[Complete RBAC Documentation](docs/RBAC_SYSTEM.md)**
 
 The comprehensive RBAC guide includes:
 - Database architecture and schema
@@ -178,14 +202,19 @@ apps/api/
 ├── internal/              # Private application code
 │   ├── auth/              # Authentication logic
 │   ├── database/          # Database connection
-│   ├── dto/               # Data transfer objects
+│   ├── dto/               # Data transfer objects (roles, permissions, users)
 │   ├── handlers/          # HTTP handlers
+│   │   ├── auth.go        # Authentication handlers
+│   │   ├── admin.go       # User management handlers
+│   │   ├── roles.go       # Role management handlers
+│   │   ├── permissions.go # Permission management handlers
+│   │   └── health.go      # Health check handler
 │   ├── helpers/           # Utility functions
 │   ├── middleware/        # HTTP middleware
 │   ├── migration/         # Migration system
 │   ├── models/            # Database models
-│   ├── server/            # Server setup
-│   └── services/          # Business logic
+│   ├── server/            # Server setup and routing
+│   └── services/          # Business logic (RBAC service)
 ├── migrations/            # SQL migration files
 ├── main.go               # Application entry point
 ├── go.mod                # Go module file
@@ -221,12 +250,12 @@ go test -cover ./...
 go test ./internal/handlers
 ```
 
-## 📚 Additional Documentation
+## Additional Documentation
 
 - **[RBAC System](docs/RBAC_SYSTEM.md)**: Comprehensive guide to role-based access control
 - **[SMTP Configuration](docs/SMTP_CONFIGURATION.md)**: Email setup guide
 
-## 🔒 Security Features
+## Security Features
 
 - **JWT Authentication**: Secure token-based authentication
 - **Password Hashing**: Bcrypt encryption for passwords
@@ -236,7 +265,7 @@ go test ./internal/handlers
 - **SQL Injection Protection**: GORM ORM with prepared statements
 - **Role-based Authorization**: Fine-grained access control
 
-## 🚀 Deployment
+## Deployment
 
 ### Docker Support
 

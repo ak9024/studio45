@@ -256,10 +256,279 @@ Authorization: Bearer {admin_token}
       "id": "uuid",
       "name": "user",
       "description": "Basic user access",
-      "created_at": "2024-01-01T12:00:00Z"
+      "created_at": "2024-01-01T12:00:00Z",
+      "updated_at": "2024-01-01T12:00:00Z"
     }
   ],
   "total": 4
+}
+```
+
+#### Create Role
+```http
+POST /api/v1/admin/roles
+Authorization: Bearer {admin_token}
+Content-Type: application/json
+
+{
+  "name": "moderator",
+  "description": "Content moderation capabilities"
+}
+```
+
+**Response:**
+```json
+{
+  "id": "uuid",
+  "name": "moderator",
+  "description": "Content moderation capabilities",
+  "permissions": [],
+  "created_at": "2024-01-01T12:00:00Z",
+  "updated_at": "2024-01-01T12:00:00Z"
+}
+```
+
+#### Get Role by ID
+```http
+GET /api/v1/admin/roles/{roleId}
+Authorization: Bearer {admin_token}
+```
+
+**Response:**
+```json
+{
+  "id": "uuid",
+  "name": "moderator",
+  "description": "Content moderation capabilities",
+  "permissions": [
+    {
+      "id": "uuid",
+      "name": "content.moderate",
+      "resource": "content",
+      "action": "moderate",
+      "description": "Moderate user content",
+      "created_at": "2024-01-01T12:00:00Z",
+      "updated_at": "2024-01-01T12:00:00Z"
+    }
+  ],
+  "created_at": "2024-01-01T12:00:00Z",
+  "updated_at": "2024-01-01T12:00:00Z"
+}
+```
+
+#### Update Role
+```http
+PUT /api/v1/admin/roles/{roleId}
+Authorization: Bearer {admin_token}
+Content-Type: application/json
+
+{
+  "name": "senior-moderator",
+  "description": "Senior content moderation capabilities"
+}
+```
+
+**Response:**
+```json
+{
+  "id": "uuid",
+  "name": "senior-moderator", 
+  "description": "Senior content moderation capabilities",
+  "permissions": [
+    {
+      "id": "uuid",
+      "name": "content.moderate",
+      "resource": "content",
+      "action": "moderate",
+      "description": "Moderate user content",
+      "created_at": "2024-01-01T12:00:00Z",
+      "updated_at": "2024-01-01T12:00:00Z"
+    }
+  ],
+  "created_at": "2024-01-01T12:00:00Z",
+  "updated_at": "2024-01-15T14:30:00Z"
+}
+```
+
+#### Delete Role
+```http
+DELETE /api/v1/admin/roles/{roleId}
+Authorization: Bearer {admin_token}
+```
+
+**Response:**
+```json
+{
+  "message": "Role deleted successfully"
+}
+```
+
+**Note:** System roles `admin` and `user` cannot be deleted.
+
+#### Get Role Permissions
+```http
+GET /api/v1/admin/roles/{roleId}/permissions
+Authorization: Bearer {admin_token}
+```
+
+**Response:**
+```json
+{
+  "permissions": [
+    {
+      "id": "uuid",
+      "name": "content.moderate",
+      "resource": "content",
+      "action": "moderate",
+      "description": "Moderate user content",
+      "created_at": "2024-01-01T12:00:00Z",
+      "updated_at": "2024-01-01T12:00:00Z"
+    }
+  ],
+  "total": 1
+}
+```
+
+#### Update Role Permissions
+```http
+PUT /api/v1/admin/roles/{roleId}/permissions
+Authorization: Bearer {admin_token}
+Content-Type: application/json
+
+{
+  "permission_ids": ["uuid1", "uuid2", "uuid3"]
+}
+```
+
+**Response:**
+```json
+{
+  "id": "uuid",
+  "name": "moderator",
+  "description": "Content moderation capabilities",
+  "permissions": [
+    {
+      "id": "uuid1",
+      "name": "content.moderate",
+      "resource": "content",
+      "action": "moderate",
+      "description": "Moderate user content",
+      "created_at": "2024-01-01T12:00:00Z",
+      "updated_at": "2024-01-01T12:00:00Z"
+    }
+  ],
+  "created_at": "2024-01-01T12:00:00Z",
+  "updated_at": "2024-01-15T14:30:00Z"
+}
+```
+
+#### Get All Permissions
+```http
+GET /api/v1/admin/permissions
+Authorization: Bearer {admin_token}
+```
+
+**Response:**
+```json
+{
+  "permissions": [
+    {
+      "id": "uuid",
+      "name": "profile.read",
+      "resource": "profile",
+      "action": "read",
+      "description": "View own profile",
+      "created_at": "2024-01-01T12:00:00Z",
+      "updated_at": "2024-01-01T12:00:00Z"
+    }
+  ],
+  "total": 11
+}
+```
+
+#### Create Permission
+```http
+POST /api/v1/admin/permissions
+Authorization: Bearer {admin_token}
+Content-Type: application/json
+
+{
+  "name": "reports.generate",
+  "resource": "reports",
+  "action": "generate",
+  "description": "Generate system reports"
+}
+```
+
+**Response:**
+```json
+{
+  "id": "uuid",
+  "name": "reports.generate",
+  "resource": "reports", 
+  "action": "generate",
+  "description": "Generate system reports",
+  "created_at": "2024-01-01T12:00:00Z",
+  "updated_at": "2024-01-01T12:00:00Z"
+}
+```
+
+#### Get Permission by ID
+```http
+GET /api/v1/admin/permissions/{permissionId}
+Authorization: Bearer {admin_token}
+```
+
+**Response:**
+```json
+{
+  "id": "uuid",
+  "name": "reports.generate",
+  "resource": "reports",
+  "action": "generate", 
+  "description": "Generate system reports",
+  "created_at": "2024-01-01T12:00:00Z",
+  "updated_at": "2024-01-01T12:00:00Z"
+}
+```
+
+#### Update Permission
+```http
+PUT /api/v1/admin/permissions/{permissionId}
+Authorization: Bearer {admin_token}
+Content-Type: application/json
+
+{
+  "name": "reports.view",
+  "resource": "reports",
+  "action": "view",
+  "description": "View system reports"
+}
+```
+
+**Response:**
+```json
+{
+  "id": "uuid",
+  "name": "reports.view",
+  "resource": "reports",
+  "action": "view",
+  "description": "View system reports",
+  "created_at": "2024-01-01T12:00:00Z",
+  "updated_at": "2024-01-15T14:30:00Z"
+}
+```
+
+#### Delete Permission
+```http
+DELETE /api/v1/admin/permissions/{permissionId}
+Authorization: Bearer {admin_token}
+```
+
+**Response:**
+```json
+{
+  "message": "Permission deleted successfully"
 }
 ```
 
@@ -566,6 +835,204 @@ function MyComponent() {
 }
 ```
 
+### Admin Settings UI Components
+
+The system includes comprehensive UI components for role and permission management:
+
+#### RolesDataTable
+Data table component for displaying and managing roles:
+
+```tsx
+import { RolesDataTable } from '@/components/settings/RolesDataTable';
+
+<RolesDataTable
+  roles={roles}
+  loading={rolesLoading}
+  onEditRole={handleEditRole}
+  onDeleteRole={handleDeleteRole}
+  onManagePermissions={handleManagePermissions}
+/>
+```
+
+**Features:**
+- Sortable columns (Name, Description, Created Date)
+- Search and filtering capabilities
+- Action buttons for edit, delete, and permission management
+- Loading states and empty states
+- Responsive design with mobile support
+
+#### PermissionsDataTable
+Data table component for displaying and managing permissions:
+
+```tsx
+import { PermissionsDataTable } from '@/components/settings/PermissionsDataTable';
+
+<PermissionsDataTable
+  permissions={permissions}
+  loading={permissionsLoading}
+  onEditPermission={handleEditPermission}
+  onDeletePermission={handleDeletePermission}
+/>
+```
+
+**Features:**
+- Displays permission name, resource, action, and description
+- Sortable and filterable columns
+- Bulk actions support
+- Color-coded resource badges
+- Action column with edit/delete buttons
+
+#### RoleFormDialog
+Modal dialog for creating and editing roles:
+
+```tsx
+import { RoleFormDialog } from '@/components/settings/RoleFormDialog';
+
+<RoleFormDialog
+  open={roleDialogOpen}
+  onOpenChange={setRoleDialogOpen}
+  role={selectedRole} // null for create, role object for edit
+  onSuccess={handleRoleSuccess}
+/>
+```
+
+**Features:**
+- Form validation with Zod schema
+- Error handling with toast notifications
+- Support for both create and edit modes
+- Real-time validation feedback
+- Accessibility-compliant form controls
+
+#### PermissionFormDialog
+Modal dialog for creating and editing permissions:
+
+```tsx
+import { PermissionFormDialog } from '@/components/settings/PermissionFormDialog';
+
+<PermissionFormDialog
+  open={permissionDialogOpen}
+  onOpenChange={setPermissionDialogOpen}
+  permission={selectedPermission} // null for create, permission object for edit
+  onSuccess={handlePermissionSuccess}
+/>
+```
+
+**Features:**
+- Resource and action field validation
+- Auto-generated permission names (resource.action)
+- Description field with character limits
+- Form persistence during editing
+- Error handling and success notifications
+
+#### RolePermissionsDialog
+Advanced dialog for managing role-permission assignments:
+
+```tsx
+import { RolePermissionsDialog } from '@/components/settings/RolePermissionsDialog';
+
+<RolePermissionsDialog
+  open={rolePermissionsDialogOpen}
+  onOpenChange={setRolePermissionsDialogOpen}
+  role={selectedRole}
+  onSuccess={handleRolePermissionsSuccess}
+/>
+```
+
+**Features:**
+- Checkbox-based permission selection
+- Search and filter permissions
+- Grouped permissions by resource
+- Bulk select/deselect operations
+- Real-time permission count updates
+- System role protection (admin permissions)
+
+### Settings Page Integration
+
+Complete settings page implementation with tabbed interface:
+
+```tsx
+import { SettingsPage } from '@/pages/settings/SettingsPage';
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/settings" element={
+        <AdminRoute>
+          <SettingsPage />
+        </AdminRoute>
+      } />
+    </Routes>
+  );
+}
+```
+
+**Settings Page Features:**
+- **Security Tab**: Role and permission management interfaces
+- **General Tab**: System configuration options  
+- **Database Tab**: Database status and maintenance tools
+- **Users Tab**: User management tools (referenced from user management page)
+
+**Security Tab Components:**
+- Role management section with data table and CRUD operations
+- Permission management section with data table and CRUD operations
+- Real-time data loading with refresh buttons
+- Toast notifications for all operations
+- Error boundary with fallback UI
+- Loading states and skeleton screens
+
+### API Service Integration
+
+Frontend services for role and permission management:
+
+```tsx
+import { adminService } from '@/services/api';
+
+// Role operations
+const roles = await adminService.getRoles();
+const role = await adminService.getRole(roleId);
+const newRole = await adminService.createRole({ name, description });
+const updatedRole = await adminService.updateRole(roleId, updates);
+await adminService.deleteRole(roleId);
+
+// Permission operations  
+const permissions = await adminService.getPermissions();
+const permission = await adminService.getPermission(permissionId);
+const newPermission = await adminService.createPermission({ name, resource, action, description });
+const updatedPermission = await adminService.updatePermission(permissionId, updates);
+await adminService.deletePermission(permissionId);
+
+// Role-Permission operations
+await adminService.updateRolePermissions(roleId, { permission_ids: [id1, id2] });
+const roleWithPermissions = await adminService.getRoleWithPermissions(roleId);
+```
+
+### Error Handling
+
+Comprehensive error handling for role and permission operations:
+
+```tsx
+try {
+  await adminService.createRole(roleData);
+  toast.success('Role created successfully');
+} catch (error: any) {
+  if (error.status === 409) {
+    toast.error('Role name already exists');
+  } else if (error.status === 403) {
+    toast.error('Insufficient permissions');
+  } else {
+    toast.error(error.message || 'Failed to create role');
+  }
+}
+```
+
+**Error Scenarios Handled:**
+- Duplicate role/permission names (409 Conflict)
+- Insufficient permissions (403 Forbidden)
+- Invalid input data (400 Bad Request)
+- Network connectivity issues
+- Server errors (500 Internal Server Error)
+- Validation errors with detailed field messages
+
 ## Error Handling
 
 ### Common Error Responses
@@ -658,8 +1125,89 @@ JOIN roles r ON ur.role_id = r.id
 WHERE u.email = 'user@example.com';
 ```
 
+## API Usage Examples
+
+### Role Management Examples
+
+#### Create a new role with permissions
+```bash
+# 1. Create the role
+curl -X POST http://localhost:8080/api/v1/admin/roles \
+  -H "Authorization: Bearer admin-jwt-token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "content-manager", 
+    "description": "Content management capabilities"
+  }'
+
+# 2. Assign permissions to the role
+curl -X PUT http://localhost:8080/api/v1/admin/roles/role-uuid/permissions \
+  -H "Authorization: Bearer admin-jwt-token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "permission_ids": ["perm-uuid-1", "perm-uuid-2"]
+  }'
+```
+
+#### Update role and manage permissions
+```bash
+# Update role details
+curl -X PUT http://localhost:8080/api/v1/admin/roles/role-uuid \
+  -H "Authorization: Bearer admin-jwt-token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "senior-content-manager",
+    "description": "Senior content management with additional privileges"
+  }'
+
+# Get role with current permissions
+curl -X GET http://localhost:8080/api/v1/admin/roles/role-uuid \
+  -H "Authorization: Bearer admin-jwt-token"
+```
+
+### Permission Management Examples
+
+#### Create resource-specific permissions
+```bash
+# Create content permissions
+curl -X POST http://localhost:8080/api/v1/admin/permissions \
+  -H "Authorization: Bearer admin-jwt-token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "content.publish",
+    "resource": "content",
+    "action": "publish", 
+    "description": "Publish content to public"
+  }'
+
+curl -X POST http://localhost:8080/api/v1/admin/permissions \
+  -H "Authorization: Bearer admin-jwt-token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "content.archive",
+    "resource": "content", 
+    "action": "archive",
+    "description": "Archive old content"
+  }'
+```
+
+#### Bulk permission management
+```bash
+# Get all permissions for management
+curl -X GET http://localhost:8080/api/v1/admin/permissions \
+  -H "Authorization: Bearer admin-jwt-token"
+
+# Update permission details
+curl -X PUT http://localhost:8080/api/v1/admin/permissions/perm-uuid \
+  -H "Authorization: Bearer admin-jwt-token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "description": "Enhanced content publishing with approval workflow"
+  }'
+```
+
 ---
 
 **Last Updated**: August 2024  
-**Version**: 1.0.0  
+**Version**: 2.0.0  
 **Maintainer**: Studio45 Development Team
