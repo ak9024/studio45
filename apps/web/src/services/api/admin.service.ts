@@ -14,6 +14,13 @@ import {
   type UpdatePermissionRequest,
   type RoleWithPermissions,
   type AssignPermissionsRequest,
+  type EmailTemplate,
+  type CreateEmailTemplateRequest,
+  type UpdateEmailTemplateRequest,
+  type PreviewEmailTemplateRequest,
+  type PreviewEmailTemplateResponse,
+  type TestEmailTemplateRequest,
+  type TemplateVariable,
 } from '@/types/api.types'
 
 export class AdminService {
@@ -100,6 +107,39 @@ export class AdminService {
 
   async getUserPermission(userId: string, permissionId: string): Promise<ApiResponse<Permission>> {
     return apiClient.get<Permission>(`/api/v1/admin/users/${userId}/permissions/${permissionId}`)
+  }
+
+  // Email Templates management
+  async getEmailTemplates(): Promise<ApiResponse<{ templates: EmailTemplate[]; total: number }>> {
+    return apiClient.get<{ templates: EmailTemplate[]; total: number }>('/api/v1/admin/email-templates')
+  }
+
+  async getEmailTemplate(id: string): Promise<ApiResponse<EmailTemplate>> {
+    return apiClient.get<EmailTemplate>(`/api/v1/admin/email-templates/${id}`)
+  }
+
+  async createEmailTemplate(data: CreateEmailTemplateRequest): Promise<ApiResponse<EmailTemplate>> {
+    return apiClient.post<EmailTemplate>('/api/v1/admin/email-templates', data)
+  }
+
+  async updateEmailTemplate(id: string, data: UpdateEmailTemplateRequest): Promise<ApiResponse<EmailTemplate>> {
+    return apiClient.put<EmailTemplate>(`/api/v1/admin/email-templates/${id}`, data)
+  }
+
+  async deleteEmailTemplate(id: string): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.delete<{ message: string }>(`/api/v1/admin/email-templates/${id}`)
+  }
+
+  async previewEmailTemplate(id: string, data: PreviewEmailTemplateRequest): Promise<ApiResponse<PreviewEmailTemplateResponse>> {
+    return apiClient.post<PreviewEmailTemplateResponse>(`/api/v1/admin/email-templates/${id}/preview`, data)
+  }
+
+  async testEmailTemplate(id: string, data: TestEmailTemplateRequest): Promise<ApiResponse<{ message: string }>> {
+    return apiClient.post<{ message: string }>(`/api/v1/admin/email-templates/${id}/test`, data)
+  }
+
+  async getEmailTemplateVariables(id: string): Promise<ApiResponse<{ variables: TemplateVariable[] }>> {
+    return apiClient.get<{ variables: TemplateVariable[] }>(`/api/v1/admin/email-templates/${id}/variables`)
   }
 }
 

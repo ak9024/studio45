@@ -119,3 +119,54 @@ export interface RoleWithPermissions extends Role {
 export interface AssignPermissionsRequest {
   permission_ids: string[]
 }
+
+// Email Template Types
+export interface EmailTemplate {
+  id: string
+  name: string
+  subject: string
+  html_template: string
+  text_template: string
+  variables: TemplateVariable[]
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface TemplateVariable {
+  name: string
+  description: string
+}
+
+export interface CreateEmailTemplateRequest {
+  name: string
+  subject: string
+  html_template: string
+  text_template: string
+  variables: TemplateVariable[]
+  is_active?: boolean
+}
+
+export interface UpdateEmailTemplateRequest {
+  name?: string
+  subject?: string
+  html_template?: string
+  text_template?: string
+  variables?: TemplateVariable[]
+  is_active?: boolean
+}
+
+export interface PreviewEmailTemplateRequest {
+  variables: Record<string, string>
+}
+
+export interface PreviewEmailTemplateResponse {
+  subject: string
+  html_content: string
+  text_content: string
+}
+
+export interface TestEmailTemplateRequest {
+  email: string
+  variables: Record<string, string>
+}

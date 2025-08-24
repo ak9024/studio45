@@ -4,9 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Shield, Plus, RotateCcw, Database } from "lucide-react"
+import { Shield, Plus, RotateCcw, Database, Mail } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
-import { type Role, type Permission } from "@/types/api.types"
+import { type Role, type Permission, type EmailTemplate } from "@/types/api.types"
 import { adminService } from "@/services/api"
 import { toast } from "sonner"
 import { RolesDataTable } from "@/components/settings/RolesDataTable"
@@ -14,6 +14,11 @@ import { RoleFormDialog } from "@/components/settings/RoleFormDialog"
 import { PermissionsDataTable } from "@/components/settings/PermissionsDataTable"
 import { PermissionFormDialog } from "@/components/settings/PermissionFormDialog"
 import { RolePermissionsDialog } from "@/components/settings/RolePermissionsDialog"
+import { EmailTemplatesDataTable } from "@/components/settings/EmailTemplatesDataTable"
+import { EmailTemplateFormDialog } from "@/components/settings/EmailTemplateFormDialog"
+import { EmailTemplatePreviewDialog } from "@/components/settings/EmailTemplatePreviewDialog"
+import { EmailTemplateTestDialog } from "@/components/settings/EmailTemplateTestDialog"
+import { TemplateVariablesInfo } from "@/components/settings/TemplateVariablesInfo"
 
 export function SettingsPage() {
   useAuth()
@@ -31,9 +36,18 @@ export function SettingsPage() {
   const [selectedPermission, setSelectedPermission] = useState<Permission | null>(null)
   const [permissionDialogOpen, setPermissionDialogOpen] = useState(false)
 
+  // Email Templates state
+  const [emailTemplates, setEmailTemplates] = useState<EmailTemplate[]>([])
+  const [emailTemplatesLoading, setEmailTemplatesLoading] = useState(false)
+  const [selectedEmailTemplate, setSelectedEmailTemplate] = useState<EmailTemplate | null>(null)
+  const [emailTemplateDialogOpen, setEmailTemplateDialogOpen] = useState(false)
+  const [emailTemplatePreviewDialogOpen, setEmailTemplatePreviewDialogOpen] = useState(false)
+  const [emailTemplateTestDialogOpen, setEmailTemplateTestDialogOpen] = useState(false)
+
   useEffect(() => {
     loadRoles()
     loadPermissions()
+    loadEmailTemplates()
   }, [])
 
   const loadRoles = async () => {
@@ -98,6 +112,37 @@ export function SettingsPage() {
     }
   }
 
+  const loadEmailTemplates = async () => {
+    try {
+      setEmailTemplatesLoading(true)
+      const response = await adminService.getEmailTemplates()
+      console.log('Email Templates API response:', response) // Debug log
+      
+      let templatesData: EmailTemplate[] = []
+      if (response) {
+        // Try multiple possible response formats (matching working patterns)
+        const data = (response as any)?.templates || 
+                     (response as any).data?.templates || 
+                     (response as any).data || 
+                     response
+        
+        if (Array.isArray(data)) {
+          templatesData = data
+        } else {
+          console.warn('Unexpected email templates response format:', response)
+        }
+      }
+      
+      setEmailTemplates(templatesData)
+    } catch (error: any) {
+      console.error('Error loading email templates:', error)
+      toast.error('Failed to load email templates')
+      setEmailTemplates([])
+    } finally {
+      setEmailTemplatesLoading(false)
+    }
+  }
+
   // Role handlers
   const handleAddRole = () => {
     setSelectedRole(null)
@@ -159,6 +204,44 @@ export function SettingsPage() {
     }
   }
 
+  // Email Template handlers
+  const handleAddEmailTemplate = () => {
+    setSelectedEmailTemplate(null)
+    setEmailTemplateDialogOpen(true)
+  }
+
+  const handleEditEmailTemplate = (template: EmailTemplate) => {
+    setSelectedEmailTemplate(template)
+    setEmailTemplateDialogOpen(true)
+  }
+
+  const handleDeleteEmailTemplate = async (templateId: string) => {
+    if (!confirm('Are you sure you want to delete this email template? This action cannot be undone.')) return
+
+    try {
+      const response = await adminService.deleteEmailTemplate(templateId)
+      if (response.success || response.data) {
+        setEmailTemplates(emailTemplates.filter(template => template.id !== templateId))
+        toast.success('Email template deleted successfully')
+      } else {
+        toast.error('Failed to delete email template')
+      }
+    } catch (error: any) {
+      console.error('Error deleting email template:', error)
+      toast.error(error.response?.data?.message || 'Failed to delete email template')
+    }
+  }
+
+  const handlePreviewEmailTemplate = (template: EmailTemplate) => {
+    setSelectedEmailTemplate(template)
+    setEmailTemplatePreviewDialogOpen(true)
+  }
+
+  const handleTestEmailTemplate = (template: EmailTemplate) => {
+    setSelectedEmailTemplate(template)
+    setEmailTemplateTestDialogOpen(true)
+  }
+
   // Dialog handlers
   const handleRoleDialogClose = () => {
     setRoleDialogOpen(false)
@@ -175,6 +258,21 @@ export function SettingsPage() {
     setSelectedRole(null)
   }
 
+  const handleEmailTemplateDialogClose = () => {
+    setEmailTemplateDialogOpen(false)
+    setSelectedEmailTemplate(null)
+  }
+
+  const handleEmailTemplatePreviewDialogClose = () => {
+    setEmailTemplatePreviewDialogOpen(false)
+    setSelectedEmailTemplate(null)
+  }
+
+  const handleEmailTemplateTestDialogClose = () => {
+    setEmailTemplateTestDialogOpen(false)
+    setSelectedEmailTemplate(null)
+  }
+
   const handleRoleSuccess = () => {
     loadRoles()
   }
@@ -185,6 +283,10 @@ export function SettingsPage() {
 
   const handleRolePermissionsSuccess = () => {
     // No need to reload anything, the dialog handles its own state
+  }
+
+  const handleEmailTemplateSuccess = () => {
+    loadEmailTemplates()
   }
 
   return (
@@ -208,6 +310,10 @@ export function SettingsPage() {
             <TabsTrigger value="security">
               <Shield className="mr-2 h-4 w-4" />
               Security
+            </TabsTrigger>
+            <TabsTrigger value="email">
+              <Mail className="mr-2 h-4 w-4" />
+              Email Templates
             </TabsTrigger>
           </TabsList>
 
@@ -295,6 +401,53 @@ export function SettingsPage() {
             </Card>
           </TabsContent>
 
+          <TabsContent value="email" className="space-y-6">
+            {/* Email Templates Management */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Mail className="h-5 w-5" />
+                      Email Templates
+                    </CardTitle>
+                    <CardDescription>
+                      Manage and customize email templates for your application
+                    </CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={loadEmailTemplates}
+                      disabled={emailTemplatesLoading}
+                    >
+                      <RotateCcw className="mr-2 h-4 w-4" />
+                      Refresh
+                    </Button>
+                    <Button onClick={handleAddEmailTemplate} size="sm">
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add Template
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <EmailTemplatesDataTable
+                  templates={emailTemplates}
+                  loading={emailTemplatesLoading}
+                  onEditTemplate={handleEditEmailTemplate}
+                  onDeleteTemplate={handleDeleteEmailTemplate}
+                  onPreviewTemplate={handlePreviewEmailTemplate}
+                  onTestTemplate={handleTestEmailTemplate}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Template Variables Documentation */}
+            <TemplateVariablesInfo />
+          </TabsContent>
+
         </Tabs>
 
         {/* Dialog Components */}
@@ -317,6 +470,27 @@ export function SettingsPage() {
           onOpenChange={handleRolePermissionsDialogClose}
           role={selectedRole}
           onSuccess={handleRolePermissionsSuccess}
+        />
+
+        <EmailTemplateFormDialog
+          open={emailTemplateDialogOpen}
+          onOpenChange={handleEmailTemplateDialogClose}
+          template={selectedEmailTemplate}
+          onSuccess={handleEmailTemplateSuccess}
+          onPreviewTemplate={handlePreviewEmailTemplate}
+          onEditTemplate={handleEditEmailTemplate}
+        />
+
+        <EmailTemplatePreviewDialog
+          open={emailTemplatePreviewDialogOpen}
+          onOpenChange={handleEmailTemplatePreviewDialogClose}
+          template={selectedEmailTemplate}
+        />
+
+        <EmailTemplateTestDialog
+          open={emailTemplateTestDialogOpen}
+          onOpenChange={handleEmailTemplateTestDialogClose}
+          template={selectedEmailTemplate}
         />
       </div>
     </DashboardLayout>
