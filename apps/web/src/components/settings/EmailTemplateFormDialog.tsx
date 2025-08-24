@@ -167,6 +167,43 @@ export function EmailTemplateFormDialog({
     toast.success(`Cloned template: ${templateToClone.name}`)
   }
 
+  // HTML structure detection and enhancement
+  const hasCompleteHTMLStructure = (htmlContent: string) => {
+    if (!htmlContent.trim()) return false
+    const content = htmlContent.toLowerCase()
+    return (
+      content.includes('<!doctype') &&
+      content.includes('<html') &&
+      content.includes('<head') &&
+      content.includes('<body')
+    )
+  }
+
+  const wrapWithHTMLStructure = (content: string) => {
+    const wrappedContent = `<!DOCTYPE html>
+<html>
+<head>
+  <title>{{.Subject}}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+${content}
+</body>
+</html>`
+    return wrappedContent
+  }
+
+  const addHTMLStructure = () => {
+    if (formData.html_template && !hasCompleteHTMLStructure(formData.html_template)) {
+      if (confirm('This will wrap your existing content with a complete HTML document structure including DOCTYPE, html, head, and body tags. Your existing content will be preserved. Continue?')) {
+        const enhancedHTML = wrapWithHTMLStructure(formData.html_template)
+        setFormData({ ...formData, html_template: enhancedHTML })
+        toast.success('Added HTML structure to template')
+      }
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -295,9 +332,9 @@ export function EmailTemplateFormDialog({
                 </Button>
               </div>
 
-              <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg">
-                <Info className="h-4 w-4 text-blue-600 mt-0.5" />
-                <div className="text-xs text-blue-800">
+              <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5" />
+                <div className="text-xs text-blue-800 dark:text-blue-200">
                   <p className="font-medium">Template Syntax:</p>
                   <p>Use <code>{"{{.VariableName}}"}</code> to insert variables in your templates.</p>
                   <p>Example: <code>{"Hello {{.UserName}}, welcome to {{.CompanyName}}!"}</code></p>
@@ -331,15 +368,28 @@ export function EmailTemplateFormDialog({
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <Label htmlFor="html_template">HTML Template</Label>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={generateDefaultTextTemplate}
-                        disabled={loading || !formData.html_template}
-                      >
-                        Generate Text Version
-                      </Button>
+                      <div className="flex gap-2">
+                        {formData.html_template && !hasCompleteHTMLStructure(formData.html_template) && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={addHTMLStructure}
+                            disabled={loading}
+                          >
+                            Add HTML Structure
+                          </Button>
+                        )}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={generateDefaultTextTemplate}
+                          disabled={loading || !formData.html_template}
+                        >
+                          Generate Text Version
+                        </Button>
+                      </div>
                     </div>
                     <Textarea
                       id="html_template"

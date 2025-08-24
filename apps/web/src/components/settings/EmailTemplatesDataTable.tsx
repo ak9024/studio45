@@ -62,9 +62,9 @@ export function EmailTemplatesDataTable({
   if (templates.length === 0) {
     return (
       <div className="text-center py-8">
-        <Mail className="mx-auto h-12 w-12 text-gray-400" />
-        <h3 className="mt-2 text-sm font-medium text-gray-900">No email templates</h3>
-        <p className="mt-1 text-sm text-gray-500">
+        <Mail className="mx-auto h-12 w-12 text-muted-foreground" />
+        <h3 className="mt-2 text-sm font-medium text-foreground">No email templates</h3>
+        <p className="mt-1 text-sm text-muted-foreground">
           Get started by creating a new email template.
         </p>
       </div>
@@ -99,7 +99,7 @@ export function EmailTemplatesDataTable({
             <TableRow key={template.id}>
               <TableCell className="font-medium">
                 <div className="flex items-center space-x-2">
-                  <Mail className="h-4 w-4 text-gray-400" />
+                  <Mail className="h-4 w-4 text-muted-foreground" />
                   <span>{template.name}</span>
                 </div>
               </TableCell>
@@ -125,7 +125,7 @@ export function EmailTemplatesDataTable({
                   {template.is_active ? "Active" : "Inactive"}
                 </Badge>
               </TableCell>
-              <TableCell className="text-sm text-gray-500">
+              <TableCell className="text-sm text-muted-foreground">
                 <div className="flex items-center space-x-1">
                   <Calendar className="h-3 w-3" />
                   <span>{formatDate(template.created_at)}</span>

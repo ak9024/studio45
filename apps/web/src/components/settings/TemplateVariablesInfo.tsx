@@ -91,8 +91,8 @@ export function TemplateVariablesInfo() {
                 </Badge>
                 <span className="text-sm font-medium">{item.description}</span>
               </div>
-              <div className="ml-2 p-3 bg-gray-50 rounded-lg">
-                <code className="text-xs text-gray-700">{item.example}</code>
+              <div className="ml-2 p-3 bg-muted rounded-lg">
+                <code className="text-xs text-muted-foreground">{item.example}</code>
               </div>
               {index < templateSyntax.length - 1 && <Separator className="my-4" />}
             </div>
@@ -129,8 +129,8 @@ export function TemplateVariablesInfo() {
                     </div>
                     <p className="text-sm text-muted-foreground">{variable.description}</p>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-500">Example:</span>
-                      <code className="text-xs bg-gray-100 px-1 py-0.5 rounded">
+                      <span className="text-xs text-muted-foreground">Example:</span>
+                      <code className="text-xs bg-muted px-1 py-0.5 rounded">
                         {variable.example}
                       </code>
                     </div>

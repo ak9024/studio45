@@ -317,7 +317,7 @@ export function EmailTemplatePreviewDialog({
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm font-medium bg-gray-50 p-3 rounded border">
+                    <p className="text-sm font-medium bg-muted p-3 rounded border">
                       {preview.subject}
                     </p>
                   </CardContent>
@@ -343,10 +343,16 @@ export function EmailTemplatePreviewDialog({
 
                       <TabsContent value="html">
                         <div className="space-y-2">
-                          <Label className="text-xs font-medium">HTML Preview:</Label>
+                          <div className="flex items-center justify-between">
+                            <Label className="text-xs font-medium">HTML Preview:</Label>
+                            <div className="text-xs text-muted-foreground">
+                              Email content is displayed as recipients will see it
+                            </div>
+                          </div>
                           <div className="border rounded-lg overflow-hidden">
                             <div 
-                              className="p-4 bg-white min-h-[300px]"
+                              className="p-4 bg-white min-h-[300px] [color-scheme:light]"
+                              style={{ colorScheme: 'light' }}
                               dangerouslySetInnerHTML={{ __html: preview.html_content }}
                             />
                           </div>
@@ -356,7 +362,7 @@ export function EmailTemplatePreviewDialog({
                       <TabsContent value="text">
                         <div className="space-y-2">
                           <Label className="text-xs font-medium">Text Preview:</Label>
-                          <div className="border rounded-lg p-4 bg-gray-50">
+                          <div className="border rounded-lg p-4 bg-muted">
                             <pre className="text-sm whitespace-pre-wrap font-mono">
                               {preview.text_content}
                             </pre>
@@ -373,11 +379,11 @@ export function EmailTemplatePreviewDialog({
               <Card>
                 <CardContent className="pt-6">
                   <div className="text-center py-8">
-                    <Eye className="mx-auto h-8 w-8 text-gray-400" />
-                    <h3 className="mt-2 text-sm font-medium text-gray-900">
+                    <Eye className="mx-auto h-8 w-8 text-muted-foreground" />
+                    <h3 className="mt-2 text-sm font-medium text-foreground">
                       No preview available
                     </h3>
-                    <p className="mt-1 text-sm text-gray-500">
+                    <p className="mt-1 text-sm text-muted-foreground">
                       Click "Update Preview" to generate a preview with your variables
                     </p>
                   </div>
