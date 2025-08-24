@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Shield, Plus, RotateCcw, Database, Mail } from "lucide-react"
+import { Shield, Plus, RotateCcw, Database, Mail, Users } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
 import { type Role, type Permission, type EmailTemplate } from "@/types/api.types"
 import { adminService } from "@/services/api"
@@ -19,6 +19,7 @@ import { EmailTemplateFormDialog } from "@/components/settings/EmailTemplateForm
 import { EmailTemplatePreviewDialog } from "@/components/settings/EmailTemplatePreviewDialog"
 import { EmailTemplateTestDialog } from "@/components/settings/EmailTemplateTestDialog"
 import { TemplateVariablesInfo } from "@/components/settings/TemplateVariablesInfo"
+import { UserRoleFlowDesigner } from "@/components/settings/UserRoleFlowDesigner"
 
 export function SettingsPage() {
   useAuth()
@@ -44,10 +45,15 @@ export function SettingsPage() {
   const [emailTemplatePreviewDialogOpen, setEmailTemplatePreviewDialogOpen] = useState(false)
   const [emailTemplateTestDialogOpen, setEmailTemplateTestDialogOpen] = useState(false)
 
+  // Users state for flow designer
+  const [users, setUsers] = useState<any[]>([])
+  const [usersLoading, setUsersLoading] = useState(false)
+
   useEffect(() => {
     loadRoles()
     loadPermissions()
     loadEmailTemplates()
+    loadUsers()
   }, [])
 
   const loadRoles = async () => {
@@ -141,6 +147,45 @@ export function SettingsPage() {
     } finally {
       setEmailTemplatesLoading(false)
     }
+  }
+
+  const loadUsers = async () => {
+    try {
+      setUsersLoading(true)
+      const response = await adminService.getUsers()
+      console.log('Users API response:', response) // Debug log
+      
+      let usersData: any[] = []
+      if (response) {
+        // Try multiple possible response formats (matching working patterns)
+        const data = (response as any)?.data || 
+                     (response as any).users || 
+                     response
+        
+        if (Array.isArray(data)) {
+          usersData = data
+        } else {
+          console.warn('Unexpected users response format:', response)
+        }
+      }
+      
+      setUsers(usersData)
+    } catch (error: any) {
+      console.error('Error loading users:', error)
+      toast.error('Failed to load users')
+      setUsers([])
+    } finally {
+      setUsersLoading(false)
+    }
+  }
+
+  const refreshAllData = async () => {
+    await Promise.all([
+      loadRoles(),
+      loadPermissions(),
+      loadEmailTemplates(),
+      loadUsers()
+    ])
   }
 
   // Role handlers
@@ -319,6 +364,10 @@ export function SettingsPage() {
               <Shield className="mr-2 h-4 w-4" />
               Security
             </TabsTrigger>
+            <TabsTrigger value="visual">
+              <Users className="mr-2 h-4 w-4" />
+              User Roles
+            </TabsTrigger>
             <TabsTrigger value="email">
               <Mail className="mr-2 h-4 w-4" />
               Email Templates
@@ -407,6 +456,16 @@ export function SettingsPage() {
                 />
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="visual" className="space-y-6">
+            {/* User Role Assignment Flow */}
+            <UserRoleFlowDesigner
+              roles={roles}
+              users={users}
+              loading={rolesLoading || usersLoading}
+              onRefresh={refreshAllData}
+            />
           </TabsContent>
 
           <TabsContent value="email" className="space-y-6">
