@@ -237,7 +237,7 @@ Models are defined in `internal/models/` using GORM. Key models include:
 - **Permission**: Granular permissions
 - **UserRole**: User-role assignments with audit trail
 
-## 🧪 Testing
+## Testing
 
 ```bash
 # Run all tests
@@ -294,7 +294,7 @@ For production deployment:
 5. Enable TLS/SSL termination
 6. Set up monitoring and logging
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -302,11 +302,11 @@ For production deployment:
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 📞 Support
+## Support
 
 For questions and support:
 
