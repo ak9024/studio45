@@ -80,3 +80,19 @@ type AdminRegisterUserRequest struct {
 	Company  *string  `json:"company,omitempty"`
 	Roles    []string `json:"roles,omitempty" validate:"omitempty,min=1"`
 }
+
+type PaginationRequest struct {
+	Page     int    `json:"page" form:"page" validate:"omitempty,min=1"`
+	Limit    int    `json:"limit" form:"limit" validate:"omitempty,min=1,max=100"`
+	Search   string `json:"search" form:"search"`
+	SortBy   string `json:"sort_by" form:"sort_by"`
+	SortDesc bool   `json:"sort_desc" form:"sort_desc"`
+}
+
+type PaginatedUsersResponse struct {
+	Users      []UserManagementResponse `json:"users"`
+	Total      int64                    `json:"total"`
+	Page       int                      `json:"page"`
+	Limit      int                      `json:"limit"`
+	TotalPages int                      `json:"total_pages"`
+}

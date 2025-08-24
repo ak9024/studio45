@@ -25,7 +25,12 @@ import {
 
 export class AdminService {
   // User management
-  async getUsers(params?: { page?: number; limit?: number }): Promise<ApiResponse<PaginatedResponse<User>>> {
+  async getUsers(params?: { 
+    page?: number; 
+    limit?: number; 
+    sort_field?: string;
+    sort_desc?: boolean;
+  }): Promise<ApiResponse<PaginatedResponse<User>>> {
     return apiClient.get<PaginatedResponse<User>>('/api/v1/admin/users', params)
   }
 

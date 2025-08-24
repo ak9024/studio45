@@ -19,48 +19,61 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, Search, Edit, Trash2, ArrowUpDown } from "lucide-react"
+import { MoreHorizontal, Search, Edit, Trash2, ArrowUpDown, ChevronUp, ChevronDown } from "lucide-react"
 import { type User } from "@/types/api.types"
+import { Pagination } from "@/components/ui/pagination"
 
 interface UsersDataTableProps {
   users: User[]
   loading: boolean
   onEditUser: (user: User) => void
   onDeleteUser: (userId: string) => void
+  // Pagination props
+  currentPage?: number
+  totalPages?: number
+  totalUsers?: number
+  pageSize?: number
+  onPageChange?: (page: number) => void
+  onPageSizeChange?: (pageSize: number) => void
+  // Sorting props
+  sortField?: string
+  sortDirection?: 'asc' | 'desc'
+  onSort?: (field: string) => void
 }
 
-export function UsersDataTable({ users, loading, onEditUser, onDeleteUser }: UsersDataTableProps) {
+export function UsersDataTable({ 
+  users, 
+  loading, 
+  onEditUser, 
+  onDeleteUser,
+  currentPage = 1,
+  totalPages = 1,
+  totalUsers = 0,
+  pageSize = 10,
+  onPageChange,
+  onPageSizeChange,
+  sortField = 'created_at',
+  sortDirection = 'desc',
+  onSort
+}: UsersDataTableProps) {
   const [searchTerm, setSearchTerm] = useState('')
-  const [sortField, setSortField] = useState<keyof User | null>(null)
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
 
   const filteredUsers = users.filter(user => 
     user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const sortedUsers = [...filteredUsers].sort((a, b) => {
-    if (!sortField) return 0
-    
-    const aValue = a[sortField]
-    const bValue = b[sortField]
-    
-    if (typeof aValue === 'string' && typeof bValue === 'string') {
-      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1
-      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1
-    }
-    
-    return 0
-  })
-
-  const handleSort = (field: keyof User) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
-    } else {
-      setSortField(field)
-      setSortDirection('asc')
+  // Handle search with pagination reset
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value)
+    // Reset to first page when searching if pagination is enabled
+    if (onPageChange && value !== searchTerm) {
+      onPageChange(1)
     }
   }
+
+  // Use filtered users directly (no client-side sorting since we do server-side sorting)
+  const displayUsers = filteredUsers
 
   const getRoleColor = (role: string) => {
     switch (role.toLowerCase()) {
@@ -72,16 +85,29 @@ export function UsersDataTable({ users, loading, onEditUser, onDeleteUser }: Use
     }
   }
 
-  const SortableHeader = ({ field, children }: { field: keyof User; children: React.ReactNode }) => (
-    <Button
-      variant="ghost"
-      onClick={() => handleSort(field)}
-      className="h-auto p-0 font-medium text-muted-foreground hover:text-foreground"
-    >
-      {children}
-      <ArrowUpDown className="ml-2 h-4 w-4" />
-    </Button>
-  )
+  const SortableHeader = ({ field, children }: { field: string; children: React.ReactNode }) => {
+    const isActive = sortField === field
+    const isAsc = isActive && sortDirection === 'asc'
+    const isDesc = isActive && sortDirection === 'desc'
+    
+    return (
+      <Button
+        variant="ghost"
+        onClick={() => onSort && onSort(field)}
+        className={`h-auto p-0 font-medium justify-start ${
+          isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+        }`}
+        disabled={!onSort}
+      >
+        {children}
+        <div className="ml-2 flex h-4 w-4 items-center justify-center">
+          {isAsc && <ChevronUp className="h-3 w-3" />}
+          {isDesc && <ChevronDown className="h-3 w-3" />}
+          {!isActive && <ArrowUpDown className="h-3 w-3 opacity-50" />}
+        </div>
+      </Button>
+    )
+  }
 
   if (loading) {
     return (
@@ -105,9 +131,20 @@ export function UsersDataTable({ users, loading, onEditUser, onDeleteUser }: Use
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
-          {users.length} user{users.length !== 1 ? 's' : ''} total
-          {searchTerm && (
-            <span>, {filteredUsers.length} matching search</span>
+          {totalUsers > 0 ? (
+            <>
+              {totalUsers} user{totalUsers !== 1 ? 's' : ''} total
+              {searchTerm && (
+                <span>, {displayUsers.length} matching search on this page</span>
+              )}
+            </>
+          ) : (
+            <>
+              {users.length} user{users.length !== 1 ? 's' : ''} on this page
+              {searchTerm && (
+                <span>, {displayUsers.length} matching search</span>
+              )}
+            </>
           )}
         </div>
         <div className="relative">
@@ -116,7 +153,7 @@ export function UsersDataTable({ users, loading, onEditUser, onDeleteUser }: Use
             placeholder="Search users..."
             className="pl-10 w-64"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
           />
         </div>
       </div>
@@ -140,14 +177,14 @@ export function UsersDataTable({ users, loading, onEditUser, onDeleteUser }: Use
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedUsers.length === 0 ? (
+            {displayUsers.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="h-24 text-center">
                   {searchTerm ? 'No users found matching your search.' : 'No users found.'}
                 </TableCell>
               </TableRow>
             ) : (
-              sortedUsers.map((user) => (
+              displayUsers.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell className="font-medium">
                     <div className="flex items-center space-x-3">
@@ -223,6 +260,18 @@ export function UsersDataTable({ users, loading, onEditUser, onDeleteUser }: Use
           </TableBody>
         </Table>
       </div>
+
+      {/* Pagination */}
+      {onPageChange && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalUsers}
+          itemsPerPage={pageSize}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
+        />
+      )}
     </div>
   )
 }

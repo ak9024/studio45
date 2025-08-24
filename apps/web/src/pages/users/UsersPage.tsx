@@ -14,19 +14,66 @@ export function UsersPage() {
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+  const [totalUsers, setTotalUsers] = useState(0)
+  const [totalPages, setTotalPages] = useState(1)
+  
+  // Sorting state
+  const [sortField, setSortField] = useState<string>('created_at')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
 
   useEffect(() => {
     loadUsers()
-  }, [])
+  }, [currentPage, pageSize, sortField, sortDirection])
 
   const loadUsers = async () => {
     try {
       setLoading(true)
-      const response = await adminService.getUsers()
+      const response = await adminService.getUsers({ 
+        page: currentPage, 
+        limit: pageSize,
+        sort_field: sortField,
+        sort_desc: sortDirection === 'desc'
+      })
+      
       if (response) {
-        // Handle the actual API format: {total: 2, users: [...]}
-        const users = (response as any)?.users || (response.data as any)?.users || response.data?.data || []
+        // Handle paginated API response
+        let users, total, page, limit, totalPages
+        
+        // Check different possible response structures
+        const data = (response as any)?.data || response
+        
+        if (data.users && typeof data.total === 'number') {
+          // Direct pagination format: {users: [...], total: 4, page: 1, limit: 10, total_pages: 1}
+          users = data.users
+          total = data.total
+          page = data.page || currentPage
+          limit = data.limit || pageSize
+          totalPages = data.total_pages || Math.ceil(total / limit)
+        } else if (Array.isArray(data.data)) {
+          // Nested format: {data: {data: [...], total: 4, ...}}
+          users = data.data
+          total = data.total || users.length
+          page = data.page || currentPage
+          limit = data.limit || pageSize
+          totalPages = data.total_pages || Math.ceil(total / limit)
+        } else {
+          // Fallback for legacy format
+          users = Array.isArray(data) ? data : []
+          total = users.length
+          page = 1
+          limit = users.length
+          totalPages = 1
+        }
+        
         setUsers(users)
+        setTotalUsers(total)
+        setCurrentPage(page)
+        setPageSize(limit)
+        setTotalPages(totalPages)
       } else {
         toast.error('Failed to load users - no response')
       }
@@ -44,8 +91,16 @@ export function UsersPage() {
     try {
       const response = await adminService.deleteUser(userId)
       if (response.success) {
-        setUsers(users.filter(user => user.id !== userId))
         toast.success('User deleted successfully')
+        
+        // If this is the only item on the current page and we're not on page 1,
+        // go to the previous page
+        if (users.length === 1 && currentPage > 1) {
+          setCurrentPage(currentPage - 1)
+        } else {
+          // Reload current page
+          loadUsers()
+        }
       } else {
         toast.error(response.message || 'Failed to delete user')
       }
@@ -72,6 +127,28 @@ export function UsersPage() {
 
   const handleDialogSuccess = () => {
     loadUsers()
+  }
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize)
+    setCurrentPage(1) // Reset to first page when page size changes
+  }
+
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      // Toggle sort direction if same field
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+    } else {
+      // Set new field and default to ascending
+      setSortField(field)
+      setSortDirection('asc')
+    }
+    // Reset to first page when sorting changes
+    setCurrentPage(1)
   }
 
 
@@ -101,6 +178,15 @@ export function UsersPage() {
               loading={loading}
               onEditUser={handleEditUser}
               onDeleteUser={handleDeleteUser}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalUsers={totalUsers}
+              pageSize={pageSize}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+              sortField={sortField}
+              sortDirection={sortDirection}
+              onSort={handleSort}
             />
           </CardContent>
         </Card>

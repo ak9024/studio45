@@ -181,6 +181,55 @@ func (s *RBACService) GetAllUsersWithRoles() ([]models.User, error) {
 	return users, err
 }
 
+// GetUsersWithRolesPaginated returns paginated users with their roles loaded
+func (s *RBACService) GetUsersWithRolesPaginated(page, limit int, search, sortBy string, sortDesc bool) ([]models.User, int64, error) {
+	var users []models.User
+	var total int64
+	
+	query := s.db.Model(&models.User{})
+	
+	// Apply search filter if provided
+	if search != "" {
+		searchPattern := "%" + search + "%"
+		query = query.Where("email ILIKE ? OR name ILIKE ? OR company ILIKE ?", searchPattern, searchPattern, searchPattern)
+	}
+	
+	// Count total records
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	
+	// Apply sorting
+	orderClause := "created_at DESC" // default sorting
+	if sortBy != "" {
+		validSortFields := map[string]bool{
+			"email":      true,
+			"name":       true,
+			"company":    true,
+			"created_at": true,
+			"updated_at": true,
+		}
+		if validSortFields[sortBy] {
+			direction := "ASC"
+			if sortDesc {
+				direction = "DESC"
+			}
+			orderClause = sortBy + " " + direction
+		}
+	}
+	
+	// Apply pagination and get results
+	offset := (page - 1) * limit
+	err := query.Select("id, email, name, phone, company, created_at, updated_at").
+		Preload("Roles").
+		Order(orderClause).
+		Offset(offset).
+		Limit(limit).
+		Find(&users).Error
+		
+	return users, total, err
+}
+
 // UpdateUser updates user information
 func (s *RBACService) UpdateUser(userID string, updates map[string]interface{}) error {
 	result := s.db.Model(&models.User{}).Where("id = ?", userID).Updates(updates)

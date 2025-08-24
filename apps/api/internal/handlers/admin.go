@@ -15,12 +15,35 @@ import (
 	"gorm.io/gorm"
 )
 
-// ListUsers returns all users (admin only)
+// ListUsers returns all users with pagination (admin only)
 func ListUsers(c *fiber.Ctx) error {
+	// Parse pagination parameters
+	var paginationReq dto.PaginationRequest
+	if err := c.QueryParser(&paginationReq); err != nil {
+		return helpers.ValidationErrorResponse(c, "Invalid pagination parameters")
+	}
+	
+	// Set default values
+	if paginationReq.Page <= 0 {
+		paginationReq.Page = 1
+	}
+	if paginationReq.Limit <= 0 {
+		paginationReq.Limit = 20
+	}
+	if paginationReq.Limit > 100 {
+		paginationReq.Limit = 100
+	}
+
 	rbacService := services.NewRBACService()
 	
-	// Get all users with their roles
-	users, err := rbacService.GetAllUsersWithRoles()
+	// Get users with pagination
+	users, total, err := rbacService.GetUsersWithRolesPaginated(
+		paginationReq.Page,
+		paginationReq.Limit,
+		paginationReq.Search,
+		paginationReq.SortBy,
+		paginationReq.SortDesc,
+	)
 	if err != nil {
 		return helpers.InternalServerErrorResponse(c, "Failed to fetch users")
 	}
@@ -39,10 +62,18 @@ func ListUsers(c *fiber.Ctx) error {
 		})
 	}
 
-	return helpers.SuccessResponse(c, fiber.StatusOK, fiber.Map{
-		"users": userResponses,
-		"total": len(userResponses),
-	})
+	// Calculate total pages
+	totalPages := int((total + int64(paginationReq.Limit) - 1) / int64(paginationReq.Limit))
+
+	response := dto.PaginatedUsersResponse{
+		Users:      userResponses,
+		Total:      total,
+		Page:       paginationReq.Page,
+		Limit:      paginationReq.Limit,
+		TotalPages: totalPages,
+	}
+
+	return helpers.SuccessResponse(c, fiber.StatusOK, response)
 }
 
 // UpdateUserRoles updates a user's roles (admin only)
