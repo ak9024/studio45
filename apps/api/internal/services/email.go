@@ -17,10 +17,10 @@ type EmailService interface {
 type ConsoleEmailService struct{}
 
 type SMTPConfig struct {
-	Host     string
-	Port     int
-	Username string
-	Password string
+	Host      string
+	Port      int
+	Username  string
+	Password  string
 	FromEmail string
 	FromName  string
 	UseTLS    bool
@@ -33,7 +33,7 @@ type SMTPEmailService struct {
 
 func NewEmailService() EmailService {
 	emailProvider := os.Getenv("EMAIL_PROVIDER")
-	
+
 	switch emailProvider {
 	case "smtp":
 		config, err := loadSMTPConfig()
@@ -41,18 +41,18 @@ func NewEmailService() EmailService {
 			log.Printf("Failed to load SMTP config: %v, falling back to console", err)
 			return &ConsoleEmailService{}
 		}
-		
+
 		if err := validateSMTPConfig(config); err != nil {
 			log.Printf("Invalid SMTP config: %v, falling back to console", err)
 			return &ConsoleEmailService{}
 		}
-		
+
 		service, err := NewSMTPEmailService(config)
 		if err != nil {
 			log.Printf("Failed to create SMTP service: %v, falling back to console", err)
 			return &ConsoleEmailService{}
 		}
-		
+
 		log.Println("✅ SMTP email service initialized successfully")
 		return service
 	case "sendgrid":
@@ -65,30 +65,30 @@ func NewEmailService() EmailService {
 }
 
 func (c *ConsoleEmailService) SendPasswordReset(to, token string) error {
-	resetURL := fmt.Sprintf("%s/reset-password?token=%s", 
+	resetURL := fmt.Sprintf("%s/reset-password?token=%s",
 		getBaseURL(), token)
-	
-	log.Printf("\n" +
-		"========================================\n" +
-		"PASSWORD RESET EMAIL\n" +
-		"========================================\n" +
-		"To: %s\n" +
-		"Subject: Reset Your Password\n" +
-		"\n" +
-		"Click the link below to reset your password:\n" +
-		"%s\n" +
-		"\n" +
-		"This link expires in 15 minutes.\n" +
+
+	log.Printf("\n"+
+		"========================================\n"+
+		"PASSWORD RESET EMAIL\n"+
+		"========================================\n"+
+		"To: %s\n"+
+		"Subject: Reset Your Password\n"+
+		"\n"+
+		"Click the link below to reset your password:\n"+
+		"%s\n"+
+		"\n"+
+		"This link expires in 15 minutes.\n"+
 		"========================================\n",
 		to, resetURL)
-	
+
 	return nil
 }
 
 func getBaseURL() string {
 	baseURL := os.Getenv("FRONTEND_URL")
 	if baseURL == "" {
-		baseURL = "http://localhost:3000"
+		baseURL = "http://localhost:5173"
 	}
 	return baseURL
 }
@@ -101,16 +101,16 @@ func loadSMTPConfig() (SMTPConfig, error) {
 	fromEmail := os.Getenv("SMTP_FROM_EMAIL")
 	fromName := os.Getenv("SMTP_FROM_NAME")
 	useTLSStr := os.Getenv("SMTP_USE_TLS")
-	
+
 	if host == "" || portStr == "" || username == "" || password == "" || fromEmail == "" {
 		return SMTPConfig{}, fmt.Errorf("missing required SMTP configuration")
 	}
-	
+
 	port, err := strconv.Atoi(portStr)
 	if err != nil {
 		return SMTPConfig{}, fmt.Errorf("invalid SMTP_PORT: %w", err)
 	}
-	
+
 	useTLS := true
 	if useTLSStr != "" {
 		useTLS, err = strconv.ParseBool(useTLSStr)
@@ -118,11 +118,11 @@ func loadSMTPConfig() (SMTPConfig, error) {
 			return SMTPConfig{}, fmt.Errorf("invalid SMTP_USE_TLS: %w", err)
 		}
 	}
-	
+
 	if fromName == "" {
 		fromName = "Studio45"
 	}
-	
+
 	return SMTPConfig{
 		Host:      host,
 		Port:      port,
@@ -155,14 +155,14 @@ func validateSMTPConfig(config SMTPConfig) error {
 
 func NewSMTPEmailService(config SMTPConfig) (*SMTPEmailService, error) {
 	dialer := gomail.NewDialer(config.Host, config.Port, config.Username, config.Password)
-	
+
 	// Test connection
 	closer, err := dialer.Dial()
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to SMTP server: %w", err)
 	}
 	closer.Close()
-	
+
 	return &SMTPEmailService{
 		config: config,
 		dialer: dialer,
@@ -172,22 +172,22 @@ func NewSMTPEmailService(config SMTPConfig) (*SMTPEmailService, error) {
 func (s *SMTPEmailService) SendPasswordReset(to, token string) error {
 	resetURL := fmt.Sprintf("%s/reset-password?token=%s", getBaseURL(), token)
 	companyName := s.config.FromName
-	
+
 	m := gomail.NewMessage()
 	m.SetHeader("From", m.FormatAddress(s.config.FromEmail, s.config.FromName))
 	m.SetHeader("To", to)
 	m.SetHeader("Subject", "Reset Your Password")
-	
+
 	// Set plain text body
 	m.SetBody("text/plain", getPasswordResetTextTemplate(resetURL, companyName))
-	
+
 	// Set HTML body
 	m.AddAlternative("text/html", getPasswordResetHTMLTemplate(resetURL, companyName))
-	
+
 	// Retry logic with exponential backoff
 	maxRetries := 3
 	var lastErr error
-	
+
 	for i := 0; i < maxRetries; i++ {
 		if err := s.dialer.DialAndSend(m); err != nil {
 			lastErr = err
@@ -202,6 +202,6 @@ func (s *SMTPEmailService) SendPasswordReset(to, token string) error {
 			return nil
 		}
 	}
-	
+
 	return fmt.Errorf("failed to send email after %d attempts: %w", maxRetries, lastErr)
 }

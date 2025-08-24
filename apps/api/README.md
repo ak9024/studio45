@@ -316,4 +316,4 @@ For questions and support:
 
 ---
 
-**Built with ❤️ by the Studio45 team**
+**Built with ❤️ by the @ak9024**
