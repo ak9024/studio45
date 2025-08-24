@@ -9,7 +9,8 @@ A modern, secure API built with Go, Fiber, and PostgreSQL featuring role-based a
 - **Role-Based Access Control**: Normalized RBAC system with comprehensive CRUD operations
 - **Admin Panel**: Full-featured user, role, and permission management UI
 - **Permission Management**: Granular permission system with resource-action structure
-- **Password Reset**: Secure email-based password recovery
+- **Email Template Management**: Database-driven customizable email templates with preview and testing
+- **Password Reset**: Secure email-based password recovery with configurable templates
 - **Database Migrations**: Version-controlled schema management
 - **API Documentation**: Comprehensive endpoint documentation
 
@@ -18,9 +19,149 @@ A modern, secure API built with Go, Fiber, and PostgreSQL featuring role-based a
 - **Framework**: Go with Fiber web framework
 - **Database**: PostgreSQL with GORM ORM
 - **Authentication**: JWT tokens with middleware protection
-- **Email**: Configurable SMTP for notifications
+- **Email**: Configurable SMTP for notifications with template management
 - **Migration**: Custom migration system
 - **Validation**: Request validation with go-playground/validator
+
+## Architecture Overview
+
+The Studio45 API follows a layered architecture pattern with clear separation of concerns:
+
+```mermaid
+graph TB
+    subgraph "Frontend Layer"
+        WEB[React Web App]
+        ADMIN[Admin Dashboard]
+    end
+    
+    subgraph "API Layer"
+        ROUTER[Fiber Router]
+        AUTH_MW[Auth Middleware]
+        ADMIN_MW[Admin Middleware]
+        
+        subgraph "Handlers"
+            AUTH_H[Auth Handler]
+            USER_H[User Handler]
+            ROLE_H[Role Handler]
+            PERM_H[Permission Handler]
+            EMAIL_H[Email Template Handler]
+            HEALTH_H[Health Handler]
+        end
+        
+        subgraph "Services"
+            RBAC_S[RBAC Service]
+            EMAIL_S[Email Service]
+            EMAIL_TEMPLATE_S[Email Template Service]
+        end
+    end
+    
+    subgraph "Database Layer"
+        PG[(PostgreSQL)]
+        
+        subgraph "Tables"
+            USERS[users]
+            ROLES[roles]
+            PERMISSIONS[permissions]
+            USER_ROLES[user_roles]
+            ROLE_PERMISSIONS[role_permissions]
+            EMAIL_TEMPLATES[email_templates]
+        end
+    end
+    
+    subgraph "External Services"
+        SMTP[SMTP Server]
+    end
+    
+    %% Frontend to API connections
+    WEB --> ROUTER
+    ADMIN --> ROUTER
+    
+    %% Router to Middleware
+    ROUTER --> AUTH_MW
+    AUTH_MW --> ADMIN_MW
+    
+    %% Middleware to Handlers
+    AUTH_MW --> AUTH_H
+    AUTH_MW --> USER_H
+    ADMIN_MW --> ROLE_H
+    ADMIN_MW --> PERM_H
+    ADMIN_MW --> EMAIL_H
+    ROUTER --> HEALTH_H
+    
+    %% Handlers to Services
+    AUTH_H --> RBAC_S
+    USER_H --> RBAC_S
+    ROLE_H --> RBAC_S
+    PERM_H --> RBAC_S
+    EMAIL_H --> EMAIL_TEMPLATE_S
+    AUTH_H --> EMAIL_S
+    
+    %% Services to Database
+    RBAC_S --> PG
+    EMAIL_TEMPLATE_S --> PG
+    EMAIL_S --> EMAIL_TEMPLATE_S
+    
+    %% Database relationships
+    USERS -.-> USER_ROLES
+    ROLES -.-> USER_ROLES
+    ROLES -.-> ROLE_PERMISSIONS
+    PERMISSIONS -.-> ROLE_PERMISSIONS
+    
+    %% External service connections
+    EMAIL_S --> SMTP
+    
+    %% Styling
+    classDef frontend fill:#e1f5fe
+    classDef api fill:#f3e5f5
+    classDef database fill:#e8f5e8
+    classDef external fill:#fff3e0
+    
+    class WEB,ADMIN frontend
+    class ROUTER,AUTH_MW,ADMIN_MW,AUTH_H,USER_H,ROLE_H,PERM_H,EMAIL_H,HEALTH_H,RBAC_S,EMAIL_S,EMAIL_TEMPLATE_S api
+    class PG,USERS,ROLES,PERMISSIONS,USER_ROLES,ROLE_PERMISSIONS,EMAIL_TEMPLATES database
+    class SMTP external
+```
+
+### Component Description
+
+#### Frontend Layer
+- **React Web App**: User-facing application with authentication and profile management
+- **Admin Dashboard**: Administrative interface for user, role, permission, and email template management
+
+#### API Layer
+- **Fiber Router**: HTTP request routing and middleware orchestration
+- **Auth Middleware**: JWT token validation and user authentication
+- **Admin Middleware**: Role-based access control for admin endpoints
+- **Handlers**: HTTP request handlers for different functional areas
+- **Services**: Business logic layer with database interactions
+
+#### Database Layer
+- **PostgreSQL**: Primary data store with normalized RBAC schema
+- **Users**: User accounts and profile information
+- **Roles/Permissions**: RBAC system with many-to-many relationships
+- **Email Templates**: Configurable email templates with variables
+
+#### Data Flow
+
+1. **Authentication Flow**:
+   ```
+   Frontend → Auth Handler → RBAC Service → Database
+   ```
+
+2. **Admin Operations**:
+   ```
+   Admin Dashboard → Admin Middleware → Handlers → Services → Database
+   ```
+
+3. **Email System**:
+   ```
+   Auth Handler → Email Service → Email Template Service → SMTP Server
+   ```
+
+4. **RBAC Verification**:
+   ```
+   Middleware → RBAC Service → Database → Permission Check
+   ```
 
 ## Quick Start
 
@@ -83,7 +224,7 @@ The API will be available at `http://localhost:8080`
 2. Set the `DATABASE_URL` environment variable
 3. Run migrations: `go run main.go migrate up`
 
-## 📖 API Documentation
+## API Documentation
 
 ### Authentication Endpoints
 
@@ -134,6 +275,18 @@ The API will be available at `http://localhost:8080`
 | `PUT` | `/api/v1/admin/permissions/:id` | Update permission | Admin |
 | `DELETE` | `/api/v1/admin/permissions/:id` | Delete permission | Admin |
 
+#### Email Template Management
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| `GET` | `/api/v1/admin/email-templates` | List all email templates | Admin |
+| `POST` | `/api/v1/admin/email-templates` | Create new email template | Admin |
+| `GET` | `/api/v1/admin/email-templates/:id` | Get email template by ID | Admin |
+| `PUT` | `/api/v1/admin/email-templates/:id` | Update email template | Admin |
+| `DELETE` | `/api/v1/admin/email-templates/:id` | Delete email template | Admin |
+| `GET` | `/api/v1/admin/email-templates/:id/variables` | Get template variables | Admin |
+| `POST` | `/api/v1/admin/email-templates/:id/preview` | Preview rendered template | Admin |
+| `POST` | `/api/v1/admin/email-templates/:id/test` | Send test email | Admin |
+
 ### System Endpoints
 
 | Method | Endpoint | Description | Auth Required |
@@ -171,7 +324,7 @@ The comprehensive RBAC guide includes:
 - Security considerations
 - Troubleshooting guide
 
-## 🛠️ Development
+## Development
 
 ### Running Migrations
 
@@ -198,23 +351,36 @@ apps/api/
 │   └── migrate.go         # Migration commands
 ├── docs/                  # Documentation
 │   ├── RBAC_SYSTEM.md     # RBAC documentation
-│   └── SMTP_CONFIGURATION.md
+│   ├── SMTP_CONFIGURATION.md # Email configuration guide
+│   └── EMAIL_TEMPLATES.md # Email template management guide
 ├── internal/              # Private application code
 │   ├── auth/              # Authentication logic
 │   ├── database/          # Database connection
-│   ├── dto/               # Data transfer objects (roles, permissions, users)
+│   ├── dto/               # Data transfer objects
+│   │   ├── roles.go       # Role DTOs
+│   │   ├── permissions.go # Permission DTOs
+│   │   ├── users.go       # User DTOs
+│   │   └── email_template.go # Email template DTOs
 │   ├── handlers/          # HTTP handlers
 │   │   ├── auth.go        # Authentication handlers
 │   │   ├── admin.go       # User management handlers
 │   │   ├── roles.go       # Role management handlers
 │   │   ├── permissions.go # Permission management handlers
+│   │   ├── email_templates.go # Email template handlers
 │   │   └── health.go      # Health check handler
 │   ├── helpers/           # Utility functions
 │   ├── middleware/        # HTTP middleware
 │   ├── migration/         # Migration system
 │   ├── models/            # Database models
+│   │   ├── user.go        # User model
+│   │   ├── role.go        # Role model
+│   │   ├── permission.go  # Permission model
+│   │   └── email_template.go # Email template model
 │   ├── server/            # Server setup and routing
-│   └── services/          # Business logic (RBAC service)
+│   └── services/          # Business logic services
+│       ├── rbac.service.go # RBAC service
+│       ├── email.go       # Email service
+│       └── email_template.service.go # Email template service
 ├── migrations/            # SQL migration files
 ├── main.go               # Application entry point
 ├── go.mod                # Go module file
@@ -232,10 +398,12 @@ apps/api/
 
 Models are defined in `internal/models/` using GORM. Key models include:
 
-- **User**: User account information
-- **Role**: Role definitions
-- **Permission**: Granular permissions
+- **User**: User account information and profile data
+- **Role**: Role definitions with descriptions
+- **Permission**: Granular permissions with resource-action structure
 - **UserRole**: User-role assignments with audit trail
+- **RolePermission**: Role-permission assignments
+- **EmailTemplate**: Customizable email templates with variables
 
 ## Testing
 
@@ -254,6 +422,7 @@ go test ./internal/handlers
 
 - **[RBAC System](docs/RBAC_SYSTEM.md)**: Comprehensive guide to role-based access control
 - **[SMTP Configuration](docs/SMTP_CONFIGURATION.md)**: Email setup guide
+- **[Email Templates](docs/EMAIL_TEMPLATES.md)**: Email template management and customization
 
 ## Security Features
 

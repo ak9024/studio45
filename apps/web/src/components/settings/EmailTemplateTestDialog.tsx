@@ -100,15 +100,54 @@ export function EmailTemplateTestDialog({
         variables: variableValues,
       })
 
-      if (response.success || response.data) {
-        toast.success(`Test email sent successfully to ${testEmail}`)
+      // Handle different possible response formats
+      console.log('Test email API response:', response)
+      
+      let isSuccess = false
+      let responseMessage = ''
+      let recipient = testEmail
+      
+      const responseAny = response as any
+      
+      // Check if response has success message directly (backend returns raw data)
+      if (responseAny && responseAny.message && responseAny.message.includes('success')) {
+        isSuccess = true
+        responseMessage = responseAny.message
+        recipient = responseAny.recipient || testEmail
+      }
+      // Check if wrapped in ApiResponse format with data field
+      else if (response && response.data) {
+        const data = response.data as any
+        if (data && data.message && data.message.includes('success')) {
+          isSuccess = true
+          responseMessage = data.message
+          recipient = data.recipient || testEmail
+        }
+      }
+      // Check if wrapped in success structure
+      else if (response && response.success && response.data) {
+        isSuccess = true
+        const data = response.data as any
+        responseMessage = data?.message || 'Test email sent successfully'
+        recipient = data?.recipient || testEmail
+      }
+      // Legacy success check
+      else if (response && (response.success || response.data)) {
+        isSuccess = true
+        responseMessage = 'Test email sent successfully'
+      }
+
+      if (isSuccess) {
+        toast.success(`Test email sent successfully to ${recipient}`)
         setLastSent(new Date().toLocaleTimeString())
       } else {
-        throw new Error('Failed to send test email')
+        console.warn('Could not determine success from response:', response)
+        throw new Error(responseMessage || 'Failed to send test email')
       }
     } catch (error: any) {
       console.error('Error sending test email:', error)
-      toast.error(error.response?.data?.message || 'Failed to send test email')
+      console.error('Full error details:', error.response)
+      toast.error(error.response?.data?.message || error.message || 'Failed to send test email')
     } finally {
       setLoading(false)
     }

@@ -220,7 +220,15 @@ export function SettingsPage() {
 
     try {
       const response = await adminService.deleteEmailTemplate(templateId)
-      if (response.success || response.data) {
+      
+      // Handle different possible response formats
+      const responseAny = response as any
+      
+      // Check for success message or successful response structure
+      if ((responseAny && responseAny.message) || 
+          (response && response.success) || 
+          (response && response.data) || 
+          response) {
         setEmailTemplates(emailTemplates.filter(template => template.id !== templateId))
         toast.success('Email template deleted successfully')
       } else {

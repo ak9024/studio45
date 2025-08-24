@@ -12,6 +12,7 @@ import (
 
 type EmailService interface {
 	SendPasswordReset(to, token string) error
+	SendTestEmail(to, subject, htmlContent, textContent string) error
 }
 
 type ConsoleEmailService struct{}
@@ -99,6 +100,25 @@ func (c *ConsoleEmailService) SendPasswordReset(to, token string) error {
 		"%s\n"+
 		"========================================\n",
 		to, subject, textContent)
+
+	return nil
+}
+
+func (c *ConsoleEmailService) SendTestEmail(to, subject, htmlContent, textContent string) error {
+	log.Printf("\n"+
+		"========================================\n"+
+		"TEST EMAIL\n"+
+		"========================================\n"+
+		"To: %s\n"+
+		"Subject: %s\n"+
+		"\n"+
+		"Text Content:\n"+
+		"%s\n"+
+		"\n"+
+		"HTML Content:\n"+
+		"%s\n"+
+		"========================================\n",
+		to, subject, textContent, htmlContent)
 
 	return nil
 }
@@ -244,4 +264,38 @@ func (s *SMTPEmailService) SendPasswordReset(to, token string) error {
 	}
 
 	return fmt.Errorf("failed to send email after %d attempts: %w", maxRetries, lastErr)
+}
+
+func (s *SMTPEmailService) SendTestEmail(to, subject, htmlContent, textContent string) error {
+	m := gomail.NewMessage()
+	m.SetHeader("From", m.FormatAddress(s.config.FromEmail, s.config.FromName))
+	m.SetHeader("To", to)
+	m.SetHeader("Subject", subject)
+
+	// Set plain text body
+	m.SetBody("text/plain", textContent)
+
+	// Set HTML body
+	m.AddAlternative("text/html", htmlContent)
+
+	// Retry logic with exponential backoff
+	maxRetries := 3
+	var lastErr error
+
+	for i := 0; i < maxRetries; i++ {
+		if err := s.dialer.DialAndSend(m); err != nil {
+			lastErr = err
+			if i < maxRetries-1 {
+				waitTime := time.Duration(i+1) * time.Second
+				log.Printf("Failed to send test email (attempt %d/%d): %v. Retrying in %v...", i+1, maxRetries, err, waitTime)
+				time.Sleep(waitTime)
+				continue
+			}
+		} else {
+			log.Printf("✅ Test email sent successfully to %s", to)
+			return nil
+		}
+	}
+
+	return fmt.Errorf("failed to send test email after %d attempts: %w", maxRetries, lastErr)
 }

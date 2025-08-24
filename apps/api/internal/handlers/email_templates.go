@@ -340,23 +340,15 @@ func TestEmailTemplate(c *fiber.Ctx) error {
 	// Send test email using the email service
 	emailService := services.NewEmailService()
 	
-	// For testing purposes, we'll create a temporary SMTP service or use console service
-	// This is a simplified approach - in production, you might want to use a dedicated test email method
-	if smtpService, ok := emailService.(*services.SMTPEmailService); ok {
-		// If SMTP is configured, we can send a real test email
-		// For now, we'll just log the rendered content and return success
-		// In a full implementation, you'd create a method to send arbitrary emails
-		_ = smtpService // Use the service to send test email
+	err = emailService.SendTestEmail(req.Email, rendered.Subject, rendered.HTMLContent, rendered.TextContent)
+	if err != nil {
+		return helpers.InternalServerErrorResponse(c, "Failed to send test email: "+err.Error())
 	}
 
-	// For now, just return the rendered content as confirmation
 	return helpers.SuccessResponse(c, fiber.StatusOK, fiber.Map{
-		"message": "Test email would be sent successfully",
-		"preview": dto.PreviewEmailTemplateResponse{
-			Subject:     rendered.Subject,
-			HTMLContent: rendered.HTMLContent,
-			TextContent: rendered.TextContent,
-		},
+		"message": "Test email sent successfully",
+		"recipient": req.Email,
+		"subject": rendered.Subject,
 	})
 }
 
