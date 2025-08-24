@@ -73,6 +73,8 @@ export interface Role {
 export interface Permission {
   id: string
   name: string
+  resource: string
+  action: string
   description: string
   created_at: string
   updated_at: string
@@ -84,4 +86,36 @@ export interface PaginatedResponse<T> {
   page: number
   limit: number
   total_pages: number
+}
+
+export interface CreateRoleRequest {
+  name: string
+  description: string
+}
+
+export interface UpdateRoleRequest {
+  name?: string
+  description?: string
+}
+
+export interface CreatePermissionRequest {
+  name: string
+  resource: string
+  action: string
+  description: string
+}
+
+export interface UpdatePermissionRequest {
+  name?: string
+  resource?: string
+  action?: string
+  description?: string
+}
+
+export interface RoleWithPermissions extends Role {
+  permissions: Permission[]
+}
+
+export interface AssignPermissionsRequest {
+  permission_ids: string[]
 }

@@ -105,6 +105,19 @@ func setupRoutes(app *fiber.App, config RouterConfig) {
 	
 	// Role and permission management
 	admin.Get("/roles", handlers.GetAllRoles)
+	admin.Post("/roles", handlers.CreateRole)
+	admin.Get("/roles/:id", handlers.GetRole)
+	admin.Put("/roles/:id", handlers.UpdateRole)
+	admin.Delete("/roles/:id", handlers.DeleteRole)
+	admin.Get("/roles/:id/permissions", handlers.GetRolePermissions)
+	admin.Put("/roles/:id/permissions", handlers.UpdateRolePermissions)
+	
+	admin.Get("/permissions", handlers.GetAllPermissions)
+	admin.Post("/permissions", handlers.CreatePermission)
+	admin.Get("/permissions/:id", handlers.GetPermission)
+	admin.Put("/permissions/:id", handlers.UpdatePermission)
+	admin.Delete("/permissions/:id", handlers.DeletePermission)
+	
 	admin.Get("/users/:id/permissions", handlers.GetUserPermissions)
 	admin.Get("/users/:id/permissions/:permission", handlers.CheckUserPermission)
 }

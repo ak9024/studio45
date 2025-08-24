@@ -8,6 +8,12 @@ import {
   type Permission,
   type PaginatedResponse,
   type ApiResponse,
+  type CreateRoleRequest,
+  type UpdateRoleRequest,
+  type CreatePermissionRequest,
+  type UpdatePermissionRequest,
+  type RoleWithPermissions,
+  type AssignPermissionsRequest,
 } from '@/types/api.types'
 
 export class AdminService {
@@ -42,7 +48,52 @@ export class AdminService {
     return apiClient.get<Role[]>('/api/v1/admin/roles')
   }
 
+  async getRole(id: string): Promise<ApiResponse<Role>> {
+    return apiClient.get<Role>(`/api/v1/admin/roles/${id}`)
+  }
+
+  async createRole(data: CreateRoleRequest): Promise<ApiResponse<Role>> {
+    return apiClient.post<Role>('/api/v1/admin/roles', data)
+  }
+
+  async updateRole(id: string, data: UpdateRoleRequest): Promise<ApiResponse<Role>> {
+    return apiClient.put<Role>(`/api/v1/admin/roles/${id}`, data)
+  }
+
+  async deleteRole(id: string): Promise<ApiResponse<null>> {
+    return apiClient.delete<null>(`/api/v1/admin/roles/${id}`)
+  }
+
+  async getRolePermissions(roleId: string): Promise<ApiResponse<Permission[]>> {
+    return apiClient.get<Permission[]>(`/api/v1/admin/roles/${roleId}/permissions`)
+  }
+
+  async updateRolePermissions(roleId: string, data: AssignPermissionsRequest): Promise<ApiResponse<RoleWithPermissions>> {
+    return apiClient.put<RoleWithPermissions>(`/api/v1/admin/roles/${roleId}/permissions`, data)
+  }
+
   // Permissions management
+  async getPermissions(): Promise<ApiResponse<Permission[]>> {
+    return apiClient.get<Permission[]>('/api/v1/admin/permissions')
+  }
+
+  async getPermission(id: string): Promise<ApiResponse<Permission>> {
+    return apiClient.get<Permission>(`/api/v1/admin/permissions/${id}`)
+  }
+
+  async createPermission(data: CreatePermissionRequest): Promise<ApiResponse<Permission>> {
+    return apiClient.post<Permission>('/api/v1/admin/permissions', data)
+  }
+
+  async updatePermission(id: string, data: UpdatePermissionRequest): Promise<ApiResponse<Permission>> {
+    return apiClient.put<Permission>(`/api/v1/admin/permissions/${id}`, data)
+  }
+
+  async deletePermission(id: string): Promise<ApiResponse<null>> {
+    return apiClient.delete<null>(`/api/v1/admin/permissions/${id}`)
+  }
+
+  // User permissions (keep existing methods for backward compatibility)
   async getUserPermissions(userId: string): Promise<ApiResponse<Permission[]>> {
     return apiClient.get<Permission[]>(`/api/v1/admin/users/${userId}/permissions`)
   }
