@@ -12,6 +12,7 @@ import {
 import { Bell, Search, LogOut, User, Settings } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
 import { useIsAdmin } from "@/hooks/useHasRole"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
 
 export function DashboardHeader() {
   const { user, logout } = useAuth()
@@ -43,6 +44,9 @@ export function DashboardHeader() {
 
       {/* User Menu */}
       <div className="flex items-center space-x-4">
+        {/* Theme Toggle */}
+        <ThemeToggle />
+        
         {/* Notifications */}
         <Button variant="ghost" size="sm" className="relative">
           <Bell className="h-5 w-5" />

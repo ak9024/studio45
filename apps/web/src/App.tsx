@@ -2,6 +2,7 @@
 import { Routes, Route, Link, Navigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { AuthProvider, useAuth } from "@/contexts/AuthContext"
+import { ThemeProvider } from "@/contexts/ThemeContext"
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute"
 import { Toaster } from "@/components/ui/sonner"
 import { LoginPage } from "./pages/auth/LoginPage"
@@ -23,8 +24,8 @@ function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm border-b">
+    <div className="min-h-screen bg-background">
+      <nav className="bg-card shadow-sm border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
@@ -48,10 +49,10 @@ function HomePage() {
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold text-foreground mb-4">
               Welcome to {appTitle}
             </h2>
-            <p className="text-lg text-gray-600 mb-8">
+            <p className="text-lg text-muted-foreground mb-8">
               Get started by creating an account or signing in to your existing account.
             </p>
             <div className="space-x-4">
@@ -121,10 +122,12 @@ function AppContent() {
 
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-      <Toaster />
-    </AuthProvider>
+    <ThemeProvider defaultTheme="system" storageKey="studio45-ui-theme">
+      <AuthProvider>
+        <AppContent />
+        <Toaster />
+      </AuthProvider>
+    </ThemeProvider>
   )
 }
 

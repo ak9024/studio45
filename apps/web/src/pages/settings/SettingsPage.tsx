@@ -4,8 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Settings, Shield, Users, Database, Plus, RotateCcw } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Settings, Shield, Users, Database, Plus, RotateCcw, Palette, Sun, Moon, Monitor } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
+import { useTheme } from "@/contexts/ThemeContext"
 import { type Role, type Permission } from "@/types/api.types"
 import { adminService } from "@/services/api"
 import { toast } from "sonner"
@@ -17,6 +19,7 @@ import { RolePermissionsDialog } from "@/components/settings/RolePermissionsDial
 
 export function SettingsPage() {
   const { user } = useAuth()
+  const { theme, setTheme } = useTheme()
   
   // Roles state
   const [roles, setRoles] = useState<Role[]>([])
@@ -209,6 +212,10 @@ export function SettingsPage() {
               <Settings className="mr-2 h-4 w-4" />
               General
             </TabsTrigger>
+            <TabsTrigger value="appearance">
+              <Palette className="mr-2 h-4 w-4" />
+              Appearance
+            </TabsTrigger>
             <TabsTrigger value="users">
               <Users className="mr-2 h-4 w-4" />
               User Management
@@ -272,6 +279,69 @@ export function SettingsPage() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="appearance" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Theme</CardTitle>
+                <CardDescription>
+                  Customize the appearance of your application
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="text-sm font-medium">Theme Selection</div>
+                    <div className="text-sm text-muted-foreground mb-4">
+                      Choose your preferred theme. System will automatically switch between light and dark based on your device settings.
+                    </div>
+                    <Select value={theme} onValueChange={setTheme}>
+                      <SelectTrigger className="w-[240px]">
+                        <SelectValue placeholder="Select theme" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="light">
+                          <div className="flex items-center gap-2">
+                            <Sun className="h-4 w-4" />
+                            <span>Light</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="dark">
+                          <div className="flex items-center gap-2">
+                            <Moon className="h-4 w-4" />
+                            <span>Dark</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="system">
+                          <div className="flex items-center gap-2">
+                            <Monitor className="h-4 w-4" />
+                            <span>System</span>
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="text-sm font-medium">Current Theme</div>
+                    <div className="text-sm text-muted-foreground capitalize">
+                      {theme} theme is currently active
+                    </div>
+                  </div>
+                  
+                  {theme === 'system' && (
+                    <div className="rounded-lg bg-muted p-4">
+                      <div className="text-sm font-medium mb-1">System Theme Detection</div>
+                      <div className="text-xs text-muted-foreground">
+                        The system theme automatically switches between light and dark modes based on your device's settings. 
+                        Currently using {window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'} mode.
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="users" className="space-y-4">
