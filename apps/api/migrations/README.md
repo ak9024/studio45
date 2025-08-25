@@ -17,11 +17,6 @@ migrations/
 ├── README.md                          # This file
 ├── 000001_initial_schema.up.sql      # Fresh setup migration (consolidated)
 ├── 000001_initial_schema.down.sql    # Rollback for fresh setup
-└── archived/                          # Legacy incremental migrations
-    ├── 000001_create_users_table.up.sql
-    ├── 000002_migrate_users_to_uuid.up.sql
-    ├── ...
-    └── (all previous migrations)
 ```
 
 ## Commands
