@@ -117,11 +117,48 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(true)
       const response = await authService.register({ name, email, password })
       
+      console.log('Registration response:', response) // Debug logging
+      
+      // Handle different possible response structures
+      let registrationData: any = null
+      
+      // Case 1: Standard ApiResponse format
       if (response.success && response.data) {
         // After registration, automatically log in
         await login(email, password)
+        return
+      }
+      // Case 2: Direct {token, user} format (same as login response)
+      else if (response && (response as any).token && (response as any).user) {
+        registrationData = response as any
+      }
+      // Case 3: Response nested in data property with token and user
+      else if ((response as any).data && (response as any).data.token && (response as any).data.user) {
+        registrationData = (response as any).data
+      }
+      // Case 4: Direct response format (no success flag) - check if user data exists
+      else if (response && ((response as any).id || (response as any).email)) {
+        // After registration, automatically log in
+        await login(email, password)
+        return
+      }
+      
+      if (registrationData && registrationData.token && registrationData.user) {
+        const { token: newToken, user: newUser } = registrationData
+        
+        // Ensure user has roles array
+        if (!newUser.roles || !Array.isArray(newUser.roles)) {
+          newUser.roles = []
+        }
+        
+        authService.setToken(newToken)
+        authService.setUser(newUser)
+        
+        setToken(newToken)
+        setUser(newUser)
       } else {
-        throw new Error(response.error || response.message || 'Registration failed')
+        console.error('Registration failed - Invalid response structure:', response) // Debug logging
+        throw new Error(response.error || response.message || 'Registration failed - Invalid response format')
       }
     } catch (error: any) {
       console.error('Registration error:', error)

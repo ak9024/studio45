@@ -2,11 +2,11 @@ package api
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 
-	"api/internal/database"
+	"api/internal/helpers"
+	"api/internal/logger"
 	"api/internal/migration"
 	"github.com/spf13/cobra"
 )
@@ -68,7 +68,7 @@ var migrateStatusCmd = &cobra.Command{
 				status = "dirty"
 			}
 
-			log.Printf("Current migration version: %d (%s)", version, status)
+			logger.Info("Current migration version", "version", version, "status", status)
 			return nil
 		})
 	},
@@ -136,15 +136,7 @@ func init() {
 }
 
 func runMigration(fn func(*migration.Manager) error) error {
-	dbConfig := database.LoadConfig()
-	databaseURL := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
-		dbConfig.User,
-		dbConfig.Password,
-		dbConfig.Host,
-		dbConfig.Port,
-		dbConfig.DBName,
-		dbConfig.SSLMode,
-	)
+	databaseURL := helpers.GetEnv("DB_DSN", "postgresql://postgres:postgres@localhost:5432/studio45?sslmode=disable")
 
 	migrationPath := os.Getenv("MIGRATION_PATH")
 	if migrationPath == "" {
@@ -164,4 +156,3 @@ func runMigration(fn func(*migration.Manager) error) error {
 
 	return fn(manager)
 }
-

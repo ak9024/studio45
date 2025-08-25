@@ -310,16 +310,6 @@ export function SettingsPageEnhanced() {
   }
 
   // Enhanced handlers for new functionality
-  const handleBulkDeleteRoles = async (roleIds: string[]) => {
-    try {
-      await Promise.all(roleIds.map(id => adminService.deleteRole(id)))
-      setRoles(roles.filter(role => !roleIds.includes(role.id)))
-      toast.success(`Deleted ${roleIds.length} roles successfully`)
-    } catch (error) {
-      console.error('Error deleting roles:', error)
-      toast.error('Failed to delete some roles')
-    }
-  }
 
   const handleBulkDeletePermissions = async (permissionIds: string[]) => {
     try {
@@ -471,7 +461,6 @@ export function SettingsPageEnhanced() {
                   onDeleteRole={handleDeleteRole}
                   onManagePermissions={handleManagePermissions}
                   onDuplicateRole={handleDuplicateRole}
-                  onBulkDelete={handleBulkDeleteRoles}
                 />
               </CardContent>
             </Card>

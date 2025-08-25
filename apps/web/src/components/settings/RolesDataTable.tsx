@@ -10,7 +10,6 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Checkbox } from "@/components/ui/checkbox"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,9 +26,7 @@ import {
   Shield, 
   ArrowUpDown, 
   Copy,
-  Key,
-  CheckSquare,
-  Square
+  Key
 } from "lucide-react"
 import { type Role, type Permission } from "@/types/api.types"
 import { adminService } from "@/services/api"
@@ -47,7 +44,6 @@ interface RolesDataTableProps {
   onDeleteRole: (roleId: string) => void
   onManagePermissions: (role: Role) => void
   onDuplicateRole?: (role: Role) => void
-  onBulkDelete?: (roleIds: string[]) => void
 }
 
 export function RolesDataTable({ 
@@ -56,16 +52,13 @@ export function RolesDataTable({
   onEditRole, 
   onDeleteRole, 
   onManagePermissions,
-  onDuplicateRole,
-  onBulkDelete
+  onDuplicateRole
 }: RolesDataTableProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [sortField, setSortField] = useState<keyof Role | 'permissionCount' | null>(null)
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
   const [rolesWithPermissions, setRolesWithPermissions] = useState<RoleWithPermissionCount[]>([])
   const [loadingPermissions, setLoadingPermissions] = useState(false)
-  const [selectedRoles, setSelectedRoles] = useState<string[]>([])
-  const [showBulkActions, setShowBulkActions] = useState(false)
 
   // Load permissions for roles
   useEffect(() => {
@@ -143,37 +136,6 @@ export function RolesDataTable({
     }
   }
 
-  // Bulk operations
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedRoles(sortedRoles.map(role => role.id))
-    } else {
-      setSelectedRoles([])
-    }
-  }
-
-  const handleSelectRole = (roleId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedRoles(prev => [...prev, roleId])
-    } else {
-      setSelectedRoles(prev => prev.filter(id => id !== roleId))
-    }
-  }
-
-  const handleBulkDelete = async () => {
-    if (selectedRoles.length === 0) return
-    if (confirm(`Are you sure you want to delete ${selectedRoles.length} roles?`)) {
-      await confirmBulkDelete()
-    }
-  }
-
-  const confirmBulkDelete = async () => {
-    if (onBulkDelete && selectedRoles.length > 0) {
-      await onBulkDelete(selectedRoles)
-      setSelectedRoles([])
-      setShowBulkActions(false)
-    }
-  }
 
   const handleDuplicateRole = async (role: Role) => {
     if (onDuplicateRole) {
@@ -215,24 +177,11 @@ export function RolesDataTable({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="text-sm text-muted-foreground">
-            {roles.length} role{roles.length !== 1 ? 's' : ''} total
-            {searchTerm && (
-              <span>, {filteredRoles.length} matching search</span>
-            )}
-          </div>
-          <Button
-            variant={showBulkActions ? "default" : "outline"}
-            size="sm"
-            onClick={() => {
-              setShowBulkActions(!showBulkActions)
-              setSelectedRoles([])
-            }}
-          >
-            {showBulkActions ? <CheckSquare className="mr-2 h-4 w-4" /> : <Square className="mr-2 h-4 w-4" />}
-            Bulk Actions
-          </Button>
+        <div className="text-sm text-muted-foreground">
+          {roles.length} role{roles.length !== 1 ? 's' : ''} total
+          {searchTerm && (
+            <span>, {filteredRoles.length} matching search</span>
+          )}
         </div>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -245,54 +194,11 @@ export function RolesDataTable({
         </div>
       </div>
 
-      {/* Bulk Actions Bar */}
-      {showBulkActions && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-          <div className="flex items-center justify-between">
-            <div className="text-sm">
-              {selectedRoles.length === 0 ? (
-                "Select roles to perform bulk actions"
-              ) : (
-                <span>
-                  <strong>{selectedRoles.length}</strong> role{selectedRoles.length !== 1 ? 's' : ''} selected
-                </span>
-              )}
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleBulkDelete}
-                disabled={selectedRoles.length === 0}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete Selected
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setSelectedRoles([])}
-                disabled={selectedRoles.length === 0}
-              >
-                Clear Selection
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
-              {showBulkActions && (
-                <TableHead className="w-[50px]">
-                  <Checkbox
-                    checked={selectedRoles.length === sortedRoles.length && sortedRoles.length > 0}
-                    onChange={(e) => handleSelectAll(e.target.checked)}
-                  />
-                </TableHead>
-              )}
               <TableHead className="w-[200px]">
                 <SortableHeader field="name">Name</SortableHeader>
               </TableHead>
@@ -311,21 +217,13 @@ export function RolesDataTable({
           <TableBody>
             {sortedRoles.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={showBulkActions ? 6 : 5} className="h-24 text-center">
+                <TableCell colSpan={5} className="h-24 text-center">
                   {searchTerm ? 'No roles found matching your search.' : 'No roles found.'}
                 </TableCell>
               </TableRow>
             ) : (
               sortedRoles.map((role) => (
                 <TableRow key={role.id}>
-                  {showBulkActions && (
-                    <TableCell>
-                      <Checkbox
-                        checked={selectedRoles.includes(role.id)}
-                        onChange={(e) => handleSelectRole(role.id, e.target.checked)}
-                      />
-                    </TableCell>
-                  )}
                   <TableCell className="font-medium">
                     <div className="flex items-center space-x-2">
                       <Shield className="h-4 w-4 text-muted-foreground" />

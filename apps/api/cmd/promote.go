@@ -2,10 +2,10 @@ package api
 
 import (
 	"fmt"
-	"log"
 
 	"api/internal/database"
 	"api/internal/helpers"
+	"api/internal/logger"
 	"api/internal/models"
 	"api/internal/services"
 	"github.com/spf13/cobra"
@@ -24,9 +24,8 @@ var promoteCmd = &cobra.Command{
 		}
 
 		// Initialize database connection
-		log.Println("Connecting to database...")
-		dbConfig := database.LoadConfig()
-		if err := database.Connect(dbConfig); err != nil {
+		logger.Info("Connecting to database...")
+		if err := database.Connect(); err != nil {
 			return fmt.Errorf("failed to connect to database: %w", err)
 		}
 		defer database.Close()
@@ -43,7 +42,7 @@ var promoteCmd = &cobra.Command{
 
 		// Check if user already has admin role
 		if user.HasRole("admin") {
-			log.Printf("User %s (%s) already has admin role", user.Name, user.Email)
+			logger.Info("User already has admin role", "name", user.Name, "email", user.Email)
 			return nil
 		}
 
@@ -61,7 +60,7 @@ var promoteCmd = &cobra.Command{
 			return fmt.Errorf("failed to assign admin role: %w", err)
 		}
 
-		log.Printf("Successfully promoted user %s (%s) to admin role", user.Name, user.Email)
+		logger.Info("Successfully promoted user to admin role", "name", user.Name, "email", user.Email)
 		return nil
 	},
 }

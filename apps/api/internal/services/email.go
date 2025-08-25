@@ -2,11 +2,11 @@ package services
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"time"
 
+	"api/internal/logger"
 	"gopkg.in/gomail.v2"
 )
 
@@ -39,26 +39,26 @@ func NewEmailService() EmailService {
 	case "smtp":
 		config, err := loadSMTPConfig()
 		if err != nil {
-			log.Printf("Failed to load SMTP config: %v, falling back to console", err)
+			logger.Warn("Failed to load SMTP config, falling back to console", "error", err)
 			return &ConsoleEmailService{}
 		}
 
 		if err := validateSMTPConfig(config); err != nil {
-			log.Printf("Invalid SMTP config: %v, falling back to console", err)
+			logger.Warn("Invalid SMTP config, falling back to console", "error", err)
 			return &ConsoleEmailService{}
 		}
 
 		service, err := NewSMTPEmailService(config)
 		if err != nil {
-			log.Printf("Failed to create SMTP service: %v, falling back to console", err)
+			logger.Warn("Failed to create SMTP service, falling back to console", "error", err)
 			return &ConsoleEmailService{}
 		}
 
-		log.Println("✅ SMTP email service initialized successfully")
+		logger.Info("SMTP email service initialized successfully")
 		return service
 	case "sendgrid":
 		// Future SendGrid implementation
-		log.Println("SendGrid email service not implemented yet, falling back to console")
+		logger.Info("SendGrid email service not implemented yet, falling back to console")
 		return &ConsoleEmailService{}
 	default:
 		return &ConsoleEmailService{}
@@ -82,7 +82,7 @@ func (c *ConsoleEmailService) SendPasswordReset(to, token string) error {
 
 	if err != nil {
 		// Fallback to hardcoded display if database template is not available
-		log.Printf("Failed to load email template from database, using fallback: %v", err)
+		logger.Warn("Failed to load email template from database, using fallback", "error", err)
 		subject = "Reset Your Password"
 		textContent = fmt.Sprintf("Click the link below to reset your password:\n%s\n\nThis link expires in 15 minutes.", resetURL)
 	} else {
@@ -90,35 +90,20 @@ func (c *ConsoleEmailService) SendPasswordReset(to, token string) error {
 		textContent = rendered.TextContent
 	}
 
-	log.Printf("\n"+
-		"========================================\n"+
-		"PASSWORD RESET EMAIL\n"+
-		"========================================\n"+
-		"To: %s\n"+
-		"Subject: %s\n"+
-		"\n"+
-		"%s\n"+
-		"========================================\n",
-		to, subject, textContent)
+	logger.Info("Password reset email (console mode)",
+		"to", to,
+		"subject", subject,
+		"content", textContent)
 
 	return nil
 }
 
 func (c *ConsoleEmailService) SendTestEmail(to, subject, htmlContent, textContent string) error {
-	log.Printf("\n"+
-		"========================================\n"+
-		"TEST EMAIL\n"+
-		"========================================\n"+
-		"To: %s\n"+
-		"Subject: %s\n"+
-		"\n"+
-		"Text Content:\n"+
-		"%s\n"+
-		"\n"+
-		"HTML Content:\n"+
-		"%s\n"+
-		"========================================\n",
-		to, subject, textContent, htmlContent)
+	logger.Info("Test email (console mode)",
+		"to", to,
+		"subject", subject,
+		"text_content", textContent,
+		"html_content", htmlContent)
 
 	return nil
 }
@@ -223,7 +208,7 @@ func (s *SMTPEmailService) SendPasswordReset(to, token string) error {
 
 	if err != nil {
 		// Fallback to hardcoded templates if database template is not available
-		log.Printf("Failed to load email template from database, using fallback: %v", err)
+		logger.Warn("Failed to load email template from database, using fallback", "error", err)
 		subject = "Reset Your Password"
 		htmlContent = getPasswordResetHTMLTemplate(resetURL, companyName)
 		textContent = getPasswordResetTextTemplate(resetURL, companyName)
@@ -253,12 +238,12 @@ func (s *SMTPEmailService) SendPasswordReset(to, token string) error {
 			lastErr = err
 			if i < maxRetries-1 {
 				waitTime := time.Duration(i+1) * time.Second
-				log.Printf("Failed to send email (attempt %d/%d): %v. Retrying in %v...", i+1, maxRetries, err, waitTime)
+				logger.Warn("Failed to send email, retrying", "attempt", i+1, "max_retries", maxRetries, "error", err, "wait_time", waitTime)
 				time.Sleep(waitTime)
 				continue
 			}
 		} else {
-			log.Printf("✅ Password reset email sent successfully to %s", to)
+			logger.Info("Password reset email sent successfully", "to", to)
 			return nil
 		}
 	}
@@ -287,12 +272,12 @@ func (s *SMTPEmailService) SendTestEmail(to, subject, htmlContent, textContent s
 			lastErr = err
 			if i < maxRetries-1 {
 				waitTime := time.Duration(i+1) * time.Second
-				log.Printf("Failed to send test email (attempt %d/%d): %v. Retrying in %v...", i+1, maxRetries, err, waitTime)
+				logger.Warn("Failed to send test email, retrying", "attempt", i+1, "max_retries", maxRetries, "error", err, "wait_time", waitTime)
 				time.Sleep(waitTime)
 				continue
 			}
 		} else {
-			log.Printf("✅ Test email sent successfully to %s", to)
+			logger.Info("Test email sent successfully", "to", to)
 			return nil
 		}
 	}

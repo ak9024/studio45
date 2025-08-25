@@ -2,8 +2,8 @@ package database
 
 import (
 	"api/internal/helpers"
+	applogger "api/internal/logger"
 	"fmt"
-	"log"
 	"os"
 	"time"
 
@@ -14,29 +14,8 @@ import (
 
 var DB *gorm.DB
 
-type Config struct {
-	Host     string
-	Port     string
-	User     string
-	Password string
-	DBName   string
-	SSLMode  string
-}
-
-func LoadConfig() Config {
-	return Config{
-		Host:     helpers.GetEnv("DB_HOST", "localhost"),
-		Port:     helpers.GetEnv("DB_PORT", "5432"),
-		User:     helpers.GetEnv("DB_USER", "postgres"),
-		Password: helpers.GetEnv("DB_PASSWORD", "postgres"),
-		DBName:   helpers.GetEnv("DB_NAME", "studio45"),
-		SSLMode:  helpers.GetEnv("DB_SSLMODE", "disable"),
-	}
-}
-
-func Connect(config Config) error {
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
-		config.Host, config.User, config.Password, config.DBName, config.Port, config.SSLMode)
+func Connect() error {
+	dsn := helpers.GetEnv("DB_DSN", "postgresql://postgres:postgres@localhost:5432/studio45?sslmode=disable")
 
 	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
@@ -58,7 +37,7 @@ func Connect(config Config) error {
 	sqlDB.SetMaxIdleConns(5)
 	sqlDB.SetConnMaxLifetime(5 * time.Minute)
 
-	log.Println("✅ Database connected successfully")
+	applogger.Info("Database connected successfully")
 	return nil
 }
 
@@ -66,13 +45,13 @@ func Migrate(models ...interface{}) error {
 	if DB == nil {
 		return fmt.Errorf("database not connected")
 	}
-	
+
 	err := DB.AutoMigrate(models...)
 	if err != nil {
 		return fmt.Errorf("failed to migrate database: %w", err)
 	}
-	
-	log.Println("✅ Database migrations completed")
+
+	applogger.Info("Database migrations completed", "models_count", len(models))
 	return nil
 }
 
@@ -94,3 +73,4 @@ func getLogLevel() logger.LogLevel {
 	}
 	return logger.Info
 }
+

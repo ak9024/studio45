@@ -2,8 +2,8 @@ package server
 
 import (
 	"fmt"
-	"log"
 
+	"api/internal/logger"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -43,7 +43,7 @@ func (s *Server) GetApp() *fiber.App {
 // Start starts the HTTP server on the configured port
 func (s *Server) Start() error {
 	addr := fmt.Sprintf(":%d", s.config.Port)
-	log.Printf("🚀 Server starting on http://localhost%s", addr)
+	logger.Info("Server starting", "address", fmt.Sprintf("http://localhost%s", addr), "port", s.config.Port)
 	return s.app.Listen(addr)
 }
 

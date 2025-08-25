@@ -2,11 +2,11 @@ package api
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"api/internal/database"
 	"api/internal/helpers"
+	"api/internal/logger"
 	"api/internal/server"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
@@ -24,8 +24,6 @@ var (
 )
 
 var rootCmd = &cobra.Command{
-	Use:           "api",
-	Short:         "Studio45 API Server",
 	SilenceErrors: true,
 	SilenceUsage:  true,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -39,10 +37,9 @@ var serverCmd = &cobra.Command{
 	Short: "Start the API server",
 	Run: func(cmd *cobra.Command, args []string) {
 		// Initialize database connection
-		log.Println("Connecting to database...")
-		dbConfig := database.LoadConfig()
-		if err := database.Connect(dbConfig); err != nil {
-			log.Fatalf("Failed to connect to database: %v", err)
+		logger.Info("Connecting to database...")
+		if err := database.Connect(); err != nil {
+			logger.Fatal("Failed to connect to database", "error", err)
 		}
 		defer database.Close()
 
@@ -53,7 +50,7 @@ var serverCmd = &cobra.Command{
 
 		srv := server.New(config)
 		if err := srv.Start(); err != nil {
-			log.Fatalf("Failed to start server: %v", err)
+			logger.Fatal("Failed to start server", "error", err)
 		}
 	},
 }
@@ -69,7 +66,7 @@ var versionCmd = &cobra.Command{
 func init() {
 	// Load .env file if it exists
 	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found, using defaults")
+		logger.Info("No .env file found, using defaults")
 	}
 
 	// Get environment variables with defaults

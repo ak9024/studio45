@@ -4,11 +4,11 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"time"
 
+	"api/internal/logger"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -76,9 +76,9 @@ func (m *Manager) Up() error {
 	}
 
 	if errors.Is(err, migrate.ErrNoChange) {
-		log.Println("No new migrations to apply")
+		logger.Info("No new migrations to apply")
 	} else {
-		log.Println("✅ Migrations applied successfully")
+		logger.Info("Migrations applied successfully")
 	}
 
 	return nil
@@ -95,9 +95,9 @@ func (m *Manager) Down() error {
 	}
 
 	if errors.Is(err, migrate.ErrNoChange) {
-		log.Println("No migrations to rollback")
+		logger.Info("No migrations to rollback")
 	} else {
-		log.Println("✅ Migrations rolled back successfully")
+		logger.Info("Migrations rolled back successfully")
 	}
 
 	return nil
@@ -113,13 +113,13 @@ func (m *Manager) Steps(n int) error {
 		if err != nil && !errors.Is(err, migrate.ErrNoChange) {
 			return fmt.Errorf("failed to run %d migration steps: %w", n, err)
 		}
-		log.Printf("✅ Applied %d migration steps", n)
+		logger.Info("Migration steps applied", "steps", n)
 	} else if n < 0 {
 		err := m.migrate.Steps(n)
 		if err != nil && !errors.Is(err, migrate.ErrNoChange) {
 			return fmt.Errorf("failed to rollback %d migration steps: %w", -n, err)
 		}
-		log.Printf("✅ Rolled back %d migration steps", -n)
+		logger.Info("Migration steps rolled back", "steps", -n)
 	}
 
 	return nil
@@ -148,7 +148,7 @@ func (m *Manager) Force(version int) error {
 		return fmt.Errorf("failed to force version: %w", err)
 	}
 
-	log.Printf("✅ Forced migration version to %d", version)
+	logger.Info("Forced migration version", "version", version)
 	return nil
 }
 
@@ -191,6 +191,6 @@ func CreateMigration(name string, migrationPath string) error {
 		return fmt.Errorf("failed to create down migration file: %w", err)
 	}
 
-	log.Printf("✅ Created migration files:\n  - %s\n  - %s", upFile, downFile)
+	logger.Info("Migration files created", "up_file", upFile, "down_file", downFile)
 	return nil
 }
