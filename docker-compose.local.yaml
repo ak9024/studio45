@@ -1,0 +1,99 @@
+services:
+  api-migrate:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: studio45-api-migrate-local
+    restart: "no"
+    entrypoint: ["/api", "migrate", "up"]
+    environment:
+      - DB_DSN=postgresql://postgres:postgres@postgres:5432/studio45?sslmode=disable
+      - MIGRATION_PATH=migrations
+      - LOG_LEVEL=debug
+      - LOG_FORMAT=text
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - studio45-network
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: studio45-api-local
+    restart: unless-stopped
+    entrypoint: ["/api", "serve"]
+    environment:
+      - PORT=8080
+      - SERVICE_VERSION=1.0.0
+      - ENV=development
+      - CORS_ALLOWED_ORIGINS=*
+      - CORS_ALLOWED_HEADERS=*
+      - CORS_ALLOWED_METHODS=*
+      - LOG_LEVEL=debug
+      - LOG_FORMAT=text
+      - DB_DSN=postgresql://postgres:postgres@postgres:5432/studio45?sslmode=disable
+      - MIGRATION_PATH=migrations
+      - JWT_SECRET=secret
+      - JWT_EXPIRATION=24h
+      - EMAIL_PROVIDER=smtp # or local
+      - FRONTEND_URL=http://localhost
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_USERNAME=your-email@gmail.com
+      - SMTP_PASSWORD=""
+      - SMTP_FROM_EMAIL="your-email@gmail.com"
+      - SMTP_FROM_NAME="Studio45"
+      - SMTP_USE_TLS=true
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - studio45-network
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+      args:
+        VITE_APP_TITLE: Studio45
+        VITE_API_HOST: http://localhost
+    container_name: studio45-web-local
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    networks:
+      - studio45-network
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: studio45-postgres-local
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: studio45
+      POSTGRES_HOST_AUTH_METHOD: md5
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_local:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d studio45"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - studio45-network
+
+volumes:
+  postgres_data_local:
+    driver: local
+
+networks:
+  studio45-network:
+    driver: bridge

@@ -1,0 +1,154 @@
+services:
+  api-migrate:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: studio45-api-migrate
+    restart: "no"
+    entrypoint: ["/api"]
+    command: ["migrate", "up"]
+    environment:
+      - DB_DSN=postgresql://postgres:postgres@postgres:5432/studio45?sslmode=disable
+      - MIGRATION_PATH=migrations
+      - LOG_LEVEL=info
+      - LOG_FORMAT=json
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - studio45-network
+
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      # Enable Docker provider
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      # API & dashboard
+      - "--api.dashboard=true"
+      - "--api.insecure=false" # Note: In production, secure this with proper authentication
+      # Entrypoints
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # Certificates
+      - "--certificatesresolvers.myresolver.acme.httpChallenge=true"
+      - "--certificatesresolvers.myresolver.acme.httpChallenge.entrypoint=web"
+      - "--certificatesresolvers.myresolver.acme.email=adiatma.kmail@gmail.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"    # HTTP
+      - "443:443"  # HTTPS
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./letsencrypt:/letsencrypt"
+    networks:
+      - studio45-network
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: studio45-api
+    restart: unless-stopped
+    environment:
+      # Server Configuration
+      - PORT=8080
+      - SERVICE_VERSION=1.0.0
+      - ENV=production
+      # CORS Configuration
+      - CORS_ALLOWED_ORIGINS=https://studio4s.xyz
+      - CORS_ALLOWED_HEADERS=Origin, Content-Type, Accept, Authorization
+      - CORS_ALLOWED_METHODS=GET, POST, PUT, DELETE, OPTIONS
+      # Logging Configuration
+      - LOG_LEVEL=info
+      - LOG_FORMAT=json
+      # Database Configuration
+      - DB_DSN=postgresql://postgres:postgres@postgres:5432/studio45?sslmode=disable
+      # Migration Configuration
+      - MIGRATION_PATH=migrations
+      # JWT Configuration
+      - JWT_SECRET=secret
+      - JWT_EXPIRATION=24h
+      # Email Configuration
+      - EMAIL_PROVIDER=smtp
+      - FRONTEND_URL=https://studio4s.xyz
+       # SMTP Configuration (if needed for testing)
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_USERNAME=adiatma.mail@gmail.com
+      - SMTP_PASSWORD=""ezco owuh lvax qsgj"
+      - SMTP_FROM_EMAIL="adiatma.mail@gmail.com"
+      - SMTP_FROM_NAME="Studio45 Local"
+      - SMTP_USE_TLS=true    
+    depends_on:
+      api-migrate:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - studio45-network
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    container_name: studio45-web
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      - VITE_APP_TITLE=Studio45
+      - VITE_API_HOST=http://api:8080
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:80 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - studio45-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.web.rule=Host(`studio4s.xyz`)"
+      - "traefik.http.routers.web.tls.certresolver=myresolver"
+      - "traefik.http.routers.web.entrypoints=websecure"
+      - "traefik.http.services.web.loadbalancer.server.port=80"
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: studio45-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: studio45
+      POSTGRES_HOST_AUTH_METHOD: md5
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d studio45"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - studio45-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  studio45-network:
+    driver: bridge
