@@ -341,7 +341,7 @@ go run main.go promote user@example.com
 3. **Discussions**: Join discussions in [GitHub Discussions](https://github.com/ak9024/studio45/discussions)
 
 ### Common Issues
-- **Database Connection**: Verify PostgreSQL is running and DATABASE_URL is correct
+- **Database Connection**: Verify PostgreSQL is running and DB_DSN is correct
 - **Frontend Build**: Clear node_modules and reinstall dependencies
 - **Authentication**: Verify JWT_SECRET is set consistently
 
