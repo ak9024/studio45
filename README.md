@@ -60,6 +60,10 @@ graph TB
         SERVICES[Business Services<br/>Auth + RBAC + Email]
     end
     
+    subgraph "Infrastructure Layer"
+        TRAEFIK[Traefik Proxy<br/>Load Balancer + HTTPS]
+    end
+    
     subgraph "Data Layer"
         DB[(PostgreSQL<br/>Primary Database)]
         CACHE[(Redis<br/>Cache Layer)]
@@ -67,34 +71,39 @@ graph TB
     
     subgraph "External Services"
         SMTP[SMTP Server<br/>Email Delivery]
+        ACME[Let's Encrypt<br/>SSL Certificates]
     end
     
     %% Connections
-    BROWSER --> WEB
-    MOBILE --> WEB
+    BROWSER --> TRAEFIK
+    MOBILE --> TRAEFIK
+    TRAEFIK --> WEB
     WEB --> UI
     WEB --> AUTH_CTX
     
-    WEB --> API
+    TRAEFIK --> API
     API --> MIDDLEWARE
     MIDDLEWARE --> SERVICES
     
     SERVICES --> DB
     SERVICES --> CACHE
     SERVICES --> SMTP
+    TRAEFIK --> ACME
     
     %% Styling
     classDef client fill:#e3f2fd
     classDef frontend fill:#f3e5f5
     classDef backend fill:#e8f5e8
+    classDef infrastructure fill:#f1f8e9
     classDef data fill:#fff3e0
     classDef external fill:#ffebee
     
     class BROWSER,MOBILE client
     class WEB,UI,AUTH_CTX frontend
     class API,MIDDLEWARE,SERVICES backend
+    class TRAEFIK infrastructure
     class DB,CACHE data
-    class SMTP external
+    class SMTP,ACME external
 ```
 
 ### Technology Stack
@@ -115,8 +124,12 @@ graph TB
 - PostgreSQL (primary database)
 - Redis (caching layer)
 
-**Development:**
+**Infrastructure:**
 - Docker & Docker Compose
+- Traefik reverse proxy
+- Let's Encrypt SSL certificates
+
+**Development:**
 - ESLint + TypeScript compiler
 - Git for version control
 
@@ -165,13 +178,74 @@ graph TB
    - Frontend: http://localhost:5173
    - Backend API: http://localhost:8080
 
-### Docker Setup (Alternative)
+### Docker Development Setup
+
+For local development with Docker:
 
 ```bash
-cd apps/api
-docker-compose up -d
-docker-compose exec api go run main.go migrate up
+# Start all services (API, Web, PostgreSQL)
+docker-compose -f docker-compose.local.yaml up -d
+
+# Check service status
+docker-compose -f docker-compose.local.yaml ps
+
+# View logs
+docker-compose -f docker-compose.local.yaml logs -f
 ```
+
+**Access your application:**
+- Frontend: http://localhost:80
+- Backend API: http://localhost:8080 (internal, proxied through frontend)
+- PostgreSQL: localhost:5432
+
+**Service Management:**
+```bash
+# Stop all services
+docker-compose -f docker-compose.local.yaml down
+
+# Rebuild after code changes
+docker-compose -f docker-compose.local.yaml up --build
+```
+
+### Docker Production Deployment
+
+For production deployment with automatic HTTPS and reverse proxy:
+
+**1. Configure your domain and email:**
+```bash
+# Edit docker-compose.yaml and update:
+# - Line 38: your-email@gmail.com (Let's Encrypt notifications)
+# - Line 61: CORS_ALLOWED_ORIGINS=https://yourdomain.com
+# - Line 76: FRONTEND_URL=https://yourdomain.com
+# - Line 121: traefik.http.routers.web.rule=Host(`yourdomain.com`)
+```
+
+**2. Set up email configuration (optional):**
+```bash
+# Update SMTP settings in docker-compose.yaml (lines 78-84)
+# Or set EMAIL_PROVIDER=local for development
+```
+
+**3. Deploy the stack:**
+```bash
+# Start production services with Traefik reverse proxy
+docker-compose up -d
+
+# Monitor deployment
+docker-compose logs -f
+
+# Check service health
+docker-compose ps
+```
+
+**Production Services:**
+- **Traefik**: Reverse proxy with automatic HTTPS (Let's Encrypt)
+- **API**: Go backend with database migrations
+- **Web**: React frontend served by nginx
+- **PostgreSQL**: Database with persistent storage
+
+**SSL Certificates:**
+Traefik automatically obtains and renews SSL certificates from Let's Encrypt. Certificates are stored in `./letsencrypt/` directory.
 
 ## Documentation
 

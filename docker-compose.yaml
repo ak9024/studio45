@@ -5,8 +5,7 @@ services:
       dockerfile: Dockerfile
     container_name: studio45-api-migrate
     restart: "no"
-    entrypoint: ["/api"]
-    command: ["migrate", "up"]
+    entrypoint: ["/api", "migrate", "up"]
     environment:
       - DB_DSN=postgresql://postgres:postgres@postgres:5432/studio45?sslmode=disable
       - MIGRATION_PATH=migrations
@@ -35,7 +34,7 @@ services:
       # Certificates
       - "--certificatesresolvers.myresolver.acme.httpChallenge=true"
       - "--certificatesresolvers.myresolver.acme.httpChallenge.entrypoint=web"
-      - "--certificatesresolvers.myresolver.acme.email=adiatma.kmail@gmail.com"
+      - "--certificatesresolvers.myresolver.acme.email=your-email@gmail.com"
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
     ports:
       - "80:80"    # HTTP
@@ -52,6 +51,7 @@ services:
       dockerfile: Dockerfile
     container_name: studio45-api
     restart: unless-stopped
+    entrypoint: ["/api", "serve"]
     environment:
       # Server Configuration
       - PORT=8080
@@ -72,19 +72,17 @@ services:
       - JWT_SECRET=secret
       - JWT_EXPIRATION=24h
       # Email Configuration
-      - EMAIL_PROVIDER=smtp
+      - EMAIL_PROVIDER=smtp # or local
       - FRONTEND_URL=https://studio4s.xyz
-       # SMTP Configuration (if needed for testing)
+      # SMTP Configuration (if needed for testing)
       - SMTP_HOST=smtp.gmail.com
       - SMTP_PORT=587
-      - SMTP_USERNAME=adiatma.mail@gmail.com
-      - SMTP_PASSWORD=""ezco owuh lvax qsgj"
-      - SMTP_FROM_EMAIL="adiatma.mail@gmail.com"
-      - SMTP_FROM_NAME="Studio45 Local"
+      - SMTP_USERNAME=your-email@gmail.com
+      - SMTP_PASSWORD=""
+      - SMTP_FROM_EMAIL=your-email@gmail.com
+      - SMTP_FROM_NAME="Studio45"
       - SMTP_USE_TLS=true    
     depends_on:
-      api-migrate:
-        condition: service_completed_successfully
       postgres:
         condition: service_healthy
     healthcheck:
@@ -100,14 +98,14 @@ services:
     build:
       context: ./apps/web
       dockerfile: Dockerfile
+      args:
+        VITE_APP_TITLE: Studio45
+        VITE_API_HOST: http://api:8080
     container_name: studio45-web
     restart: unless-stopped
     depends_on:
       api:
         condition: service_healthy
-    environment:
-      - VITE_APP_TITLE=Studio45
-      - VITE_API_HOST=http://api:8080
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:80 || exit 1"]
       interval: 30s
