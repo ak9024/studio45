@@ -299,6 +299,30 @@ Traefik automatically obtains and renews SSL certificates from Let's Encrypt. Ce
 - `GET /api/v1/admin/users/:id/permissions` - Get user permissions
 - `GET /api/v1/admin/users/:id/permissions/:permission` - Check user permission
 
+#### Admin - User Promotion (Requires Admin Role)
+Studio45 provides multiple methods to promote users to different roles:
+
+**CLI Promotion (Direct Database)**
+- `go run main.go promote [email]` - Promote user from 'user' to 'admin' role via CLI
+
+**CLI Usage Examples:**
+
+Promote user to admin (direct database access):
+```bash
+# Navigate to API directory
+cd apps/api
+
+# Promote user by email
+go run main.go promote user@example.com
+```
+
+**Security Considerations:**
+- API promotion requires admin authentication token
+- CLI promotion requires direct server access and database connection
+- All promotions are logged with audit trail (timestamp, granted_by)
+- Users cannot promote themselves via API
+- CLI promotion only works for user → admin promotion
+
 #### Admin - Email Template Management (Requires Admin Role)
 - `GET /api/v1/admin/email-templates` - List all email templates
 - `POST /api/v1/admin/email-templates` - Create new email template
