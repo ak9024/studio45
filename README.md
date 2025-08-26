@@ -106,6 +106,10 @@ graph TB
     class SMTP,ACME external
 ```
 
+### Database Overview
+
+![database](./database.png)
+
 ### Technology Stack
 
 **Frontend:**
@@ -150,22 +154,17 @@ graph TB
    cd studio45
    ```
 
-2. **Set up the database:**
-   ```bash
-   createdb studio45_dev
-   ```
-
-3. **Start the backend:**
+2. **Start the backend:**
    ```bash
    cd apps/api
    cp .env.example .env
    # Edit .env with your database configuration
    go mod download
-   go run main.go migrate up
+   go run main.go migrate up # automatic create database include tables
    go run main.go
    ```
 
-4. **Start the frontend:**
+3. **Start the frontend:**
    ```bash
    cd apps/web
    cp .env.example .env
@@ -260,16 +259,55 @@ Traefik automatically obtains and renews SSL certificates from Let's Encrypt. Ce
 
 ### API Endpoints
 
-**Authentication:**
-- `POST /api/v1/auth/register` - User registration
-- `POST /api/v1/auth/login` - User login
-- `GET /api/v1/auth/profile` - Get user profile
+#### Public Endpoints
+- `GET /health` - Health check endpoint
 
-**Admin (Requires Admin Role):**
+#### Authentication Endpoints
+- `POST /api/v1/auth/register` - User registration
+- `POST /api/v1/auth/login` - User authentication
+- `POST /api/v1/auth/forgot-password` - Request password reset
+- `POST /api/v1/auth/reset-password` - Reset user password
+
+#### Protected User Endpoints (Requires Authentication)
+- `GET /api/v1/protected/profile` - Get current user profile
+- `PUT /api/v1/protected/profile` - Update current user profile
+
+#### Admin - User Management (Requires Admin Role)
 - `GET /api/v1/admin/users` - List all users
+- `POST /api/v1/admin/users` - Create new user
+- `PUT /api/v1/admin/users/:id` - Update specific user
+- `PUT /api/v1/admin/users/:id/roles` - Update user roles
+- `DELETE /api/v1/admin/users/:id` - Delete user
+
+#### Admin - Role Management (Requires Admin Role)
 - `GET /api/v1/admin/roles` - List all roles
+- `POST /api/v1/admin/roles` - Create new role
+- `GET /api/v1/admin/roles/:id` - Get specific role
+- `PUT /api/v1/admin/roles/:id` - Update specific role
+- `DELETE /api/v1/admin/roles/:id` - Delete role
+- `GET /api/v1/admin/roles/:id/permissions` - Get role permissions
+- `PUT /api/v1/admin/roles/:id/permissions` - Update role permissions
+
+#### Admin - Permission Management (Requires Admin Role)
 - `GET /api/v1/admin/permissions` - List all permissions
-- `GET /api/v1/admin/email-templates` - List email templates
+- `POST /api/v1/admin/permissions` - Create new permission
+- `GET /api/v1/admin/permissions/:id` - Get specific permission
+- `PUT /api/v1/admin/permissions/:id` - Update specific permission
+- `DELETE /api/v1/admin/permissions/:id` - Delete permission
+
+#### Admin - RBAC Queries (Requires Admin Role)
+- `GET /api/v1/admin/users/:id/permissions` - Get user permissions
+- `GET /api/v1/admin/users/:id/permissions/:permission` - Check user permission
+
+#### Admin - Email Template Management (Requires Admin Role)
+- `GET /api/v1/admin/email-templates` - List all email templates
+- `POST /api/v1/admin/email-templates` - Create new email template
+- `GET /api/v1/admin/email-templates/:id` - Get specific template
+- `PUT /api/v1/admin/email-templates/:id` - Update email template
+- `DELETE /api/v1/admin/email-templates/:id` - Delete email template
+- `GET /api/v1/admin/email-templates/:id/variables` - Get template variables
+- `POST /api/v1/admin/email-templates/:id/preview` - Preview email template
+- `POST /api/v1/admin/email-templates/:id/test` - Send test email
 
 ## Support
 
