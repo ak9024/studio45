@@ -342,7 +342,7 @@ func CreateUser(c *fiber.Ctx) error {
 		return helpers.InternalServerErrorResponse(c, "Failed to fetch created user")
 	}
 
-	return helpers.SuccessResponse(c, fiber.StatusCreated, dto.UserManagementResponse{
+	userResponse := dto.UserManagementResponse{
 		ID:        createdUser.ID,
 		Email:     createdUser.Email,
 		Name:      createdUser.Name,
@@ -351,5 +351,7 @@ func CreateUser(c *fiber.Ctx) error {
 		Roles:     createdUser.GetRoleNames(),
 		CreatedAt: createdUser.CreatedAt.Format("2006-01-02T15:04:05Z"),
 		UpdatedAt: createdUser.UpdatedAt.Format("2006-01-02T15:04:05Z"),
-	})
+	}
+
+	return helpers.SuccessResponse(c, fiber.StatusCreated, fiber.Map{"user": userResponse})
 }
