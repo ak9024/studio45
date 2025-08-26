@@ -8,6 +8,8 @@ A modern, full-stack application built with Go and React, featuring comprehensiv
   - [Table of Contents](#table-of-contents)
   - [Features](#features)
   - [Architecture Overview](#architecture-overview)
+  - [Database Overview](#database-overview)
+  - [Frontend Overview](#frontend-overview)
   - [Quick Start](#quick-start)
   - [Documentation](#documentation)
   - [Support](#support)
@@ -108,7 +110,52 @@ graph TB
 
 ### Database Overview
 
-![database](./database.png)
+![database](./assets/database.png)
+
+## Frontend Overview
+
+Studio45 features a modern, responsive React-based administrative interface built with TypeScript and shadcn/ui components. The frontend provides comprehensive management capabilities for users, roles, permissions, and system configuration through an intuitive dashboard.
+
+### Admin Settings - Roles Management
+![Roles Management](./assets/1.png)
+
+The Roles Management interface allows administrators to create and manage user roles with granular permission control. Features include:
+- View all system roles with permission counts
+- Create new roles with custom permissions
+- Edit existing role configurations
+- Real-time permission assignment and management
+
+### Email Templates Management
+![Email Templates](./assets/2.png)
+
+The Email Templates system provides a powerful interface for managing dynamic email communications:
+- Template creation and customization with Go template syntax
+- Variable substitution support for personalized content
+- Template preview and testing capabilities
+- Conditional content rendering based on user data
+
+### Users Management
+![Users Management](./assets/3.png)
+
+Comprehensive user administration interface offering:
+- Complete user listing with search and filtering
+- User profile management with contact information
+- Role assignment and permission management
+- Account status monitoring and control
+
+### User Profile Interface
+![User Profile](./assets/4.png)
+
+Individual user profile pages provide detailed account information:
+- Personal information display and editing
+- Role and permission visualization
+- Account activity tracking
+- Membership and update history
+
+### Analytics Dashboard
+![Dashboard](./assets/5.png)
+
+The main dashboard offers business intelligence and system insights:
 
 ### Technology Stack
 
